@@ -135,6 +135,8 @@ bool platformGetScaledWindowSize(int32_t* outW, int32_t* outH);
 void platformSetWindowSize(int32_t width, int32_t height);
 void platformSetWindowTitle(const char* title);
 void platformSleepUntil(uint64_t time);
+void platformSetFullscreen(bool newState);
+bool platformGetFullscreen();
 
 extern InputRecording *globalInputRecording;
 

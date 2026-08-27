@@ -4,6 +4,14 @@
 #include "string_compat.h"
 #include "data_win.h"
 
+void platformSetFullscreen(bool newState) {
+    (void)newState;
+}
+
+bool platformGetFullscreen() {
+    return true;
+}
+
 void platformLog(const logType type, const char *format, va_list va) {
     FILE *out = stderr;
     switch (type) {

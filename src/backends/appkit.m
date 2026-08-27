@@ -339,6 +339,18 @@ void platformGetMousePos(double *xPos, double *yPos) {
     *yPos = mouseLocation.y;
 }
 
+bool platformGetFullscreen() {
+    return (window.styleMask & NSWindowStyleMaskFullScreen) != 0;
+}
+
+void platformSetFullscreen(bool newState) {
+    bool isCurrentlyFullScreen = platformGetFullscreen();
+
+    if (newState != isCurrentlyFullScreen) {
+        [window toggleFullScreen:nil];
+    }
+}
+
 NSMenu* createAppMenu() {
     NSMenu *appMenu = [[NSMenu alloc] initWithTitle:@"App"];
 

@@ -254,6 +254,15 @@ void Runner_setNextFrame(uint32_t* framebuffer, int width, int height) {
 
 #endif
 
+void platformSetFullscreen(bool newState) {
+    SDL_SetWindowFullscreen(window, newState);
+}
+
+bool platformGetFullscreen() {
+    Uint64 flags = SDL_GetWindowFlags(window);
+    return flags & SDL_WINDOW_FULLSCREEN;
+}
+
 void platformSwapBuffers(void) {
 #ifdef ENABLE_SW_RENDERER
     if(gfx == SOFTWARE) {

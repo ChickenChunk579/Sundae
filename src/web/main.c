@@ -22,6 +22,14 @@ static int32_t gAudioSampleRate = 48000;
 uint8_t keyDown[GML_KEY_COUNT] = {0};
 uint8_t keyUp[GML_KEY_COUNT] = {0};
 
+void platformSetFullscreen(bool newState) {
+    (void)newState;
+}
+
+bool platformGetFullscreen() {
+    return true;
+}
+
 void platformLog(const logType type, const char *format, va_list va) {
     FILE *out = stderr;
     switch (type) {

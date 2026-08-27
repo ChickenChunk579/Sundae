@@ -276,6 +276,14 @@ void platformSwapBuffers(void) {
     glfwSwapBuffers();
 }
 
+bool platformGetFullscreen() {
+    return false;
+}
+
+void platformSetFullscreen(bool newState) {
+    
+}
+
 void *platformGetProcAddress(const char *name) {
 #ifdef _WIN32
     // glfw2's glfwGetProcAddress is broken on Windows.

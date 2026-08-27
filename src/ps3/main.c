@@ -1,4 +1,5 @@
 #include "data_win.h"
+#include "platformdefs.h"
 #include "ps3gl.h"
 #include "rsxutil.h"
 #include "vm.h"
@@ -153,6 +154,14 @@ char *str_replace(char *orig, char *rep, char *with) {
     }
     strcpy(tmp, orig);
     return result;
+}
+
+void platformSetFullscreen(bool newState) {
+    (void)newState;
+}
+
+bool platformGetFullscreen() {
+    return true;
 }
 
 void platformLog(const logType type, const char *format, va_list va) {

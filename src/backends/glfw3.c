@@ -349,6 +349,35 @@ void platformSwapBuffers(void) {
     glfwSwapBuffers(window);
 }
 
+bool platformGetFullscreen() {
+    return glfwGetWindowMonitor(window) != NULL;
+}
+
+static int saved_x = 100, saved_y = 100;
+static int saved_width = 800, saved_height = 600;
+
+void platformSetFullscreen(bool newState) {
+    if (!window) return;
+
+    bool currentState = (glfwGetWindowMonitor(window) != NULL);
+    if (currentState == newState) return;
+
+    if (newState) {
+        glfwGetWindowPos(window, &saved_x, &saved_y);
+        glfwGetWindowSize(window, &saved_width, &saved_height);
+
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        if (monitor) {
+            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+            if (mode) {
+                glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+            }
+        }
+    } else {
+        glfwSetWindowMonitor(window, NULL, saved_x, saved_y, saved_width, saved_height, 0);
+    }
+}
+
 void *platformGetProcAddress(const char *name) {
     return (void *)glfwGetProcAddress(name);
 }

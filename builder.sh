@@ -29,9 +29,21 @@ else
 fi
 
 CMAKE_FLAGS="-B build/$1 -S . -GNinja -DCMAKE_EXPORT_COMPILE_COMMANDS=1 "
-if [[ $1 == "mac" ]]; then
+if [[ $1 == "mac-appkit" ]]; then
     CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=appkit -DVIDEO_BACKEND=ffmpeg" 
-elif [[ $1 == "linux" ]]; then
+elif [[ $1 == "mac-glfw3" ]]; then
+    CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=glfw3 -DVIDEO_BACKEND=ffmpeg" 
+elif [[ $1 == "mac-sdl1" ]]; then
+    CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=sdl1 -DVIDEO_BACKEND=ffmpeg" 
+elif [[ $1 == "mac-sdl2" ]]; then
+    CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=sdl2 -DVIDEO_BACKEND=ffmpeg" 
+elif [[ $1 == "mac-sdl3" ]]; then
+    CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=sdl3 -DVIDEO_BACKEND=ffmpeg" 
+elif [[ $1 == "linux-sdl1" ]]; then
+    CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=sdl1 -DVIDEO_BACKEND=ffmpeg"
+elif [[ $1 == "linux-sdl2" ]]; then
+    CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=sdl2 -DVIDEO_BACKEND=ffmpeg"
+elif [[ $1 == "linux-sdl3" ]]; then
     CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=sdl3 -DVIDEO_BACKEND=ffmpeg"
 else
     echo "unknown platform: $1"

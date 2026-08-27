@@ -38,6 +38,10 @@
               ninja
               pkg-config
               ffmpeg
+              glfw
+              sdl3
+              SDL2
+              SDL
             ];
 
             shellHook = ''
