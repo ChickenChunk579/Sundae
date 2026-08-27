@@ -28,7 +28,7 @@ set(BACKEND "sdl2")
 
 endif()
 
-project(butterscotch C)
+project(sundae C)
 
 if (PLATFORM STREQUAL "vita")
 include("${VITASDK}/share/vita.cmake" REQUIRED)
@@ -164,16 +164,16 @@ endif()
 file(GLOB PLATFORM_SOURCES src/${PLATFORM}/*.c)
 
 if(PLATFORM STREQUAL "android")
-    add_library(butterscotch SHARED ${SOURCES} ${PLATFORM_SOURCES} ${AUDIO_SOURCES})
+    add_library(sundae SHARED ${SOURCES} ${PLATFORM_SOURCES} ${AUDIO_SOURCES})
 else()
-    add_executable(butterscotch ${SOURCES} ${PLATFORM_SOURCES} ${AUDIO_SOURCES})
+    add_executable(sundae ${SOURCES} ${PLATFORM_SOURCES} ${AUDIO_SOURCES})
 endif()
 
-target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src)
-target_include_directories(butterscotch PRIVATE src/${PLATFORM})
+target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(sundae PRIVATE src/${PLATFORM})
 
 if(AUDIO_BACKEND STREQUAL "openal")
-    target_include_directories(butterscotch PUBLIC src/audio/openal)
+    target_include_directories(sundae PUBLIC src/audio/openal)
     add_compile_definitions(USE_OPENAL)
     if(APPLE)
         set(AUDIO_LIBRARIES "-framework OpenAL")
@@ -181,23 +181,23 @@ if(AUDIO_BACKEND STREQUAL "openal")
         set(AUDIO_LIBRARIES openal pthread)
     elseif(NOT PLATFORM STREQUAL "ps3")
         find_package(OpenAL REQUIRED)
-        target_include_directories(butterscotch PUBLIC "${OPENAL_INCLUDE_DIR}")
+        target_include_directories(sundae PUBLIC "${OPENAL_INCLUDE_DIR}")
         set(AUDIO_LIBRARIES "${OPENAL_LIBRARY}")
     endif()
 elseif(AUDIO_BACKEND STREQUAL "miniaudio")
-    target_include_directories(butterscotch SYSTEM PUBLIC vendor/miniaudio)
-    target_include_directories(butterscotch PUBLIC src/audio/miniaudio)
+    target_include_directories(sundae SYSTEM PUBLIC vendor/miniaudio)
+    target_include_directories(sundae PUBLIC src/audio/miniaudio)
     add_compile_definitions(USE_MINIAUDIO)
     if (NOT WIN32)
         set(AUDIO_LIBRARIES pthread)
     endif()
 elseif(AUDIO_BACKEND STREQUAL "web")
-    target_include_directories(butterscotch SYSTEM PUBLIC vendor/miniaudio)
-    target_include_directories(butterscotch PUBLIC src/audio/web)
-    target_include_directories(butterscotch PUBLIC src/audio/miniaudio)
+    target_include_directories(sundae SYSTEM PUBLIC vendor/miniaudio)
+    target_include_directories(sundae PUBLIC src/audio/web)
+    target_include_directories(sundae PUBLIC src/audio/miniaudio)
     add_compile_definitions(USE_WEB_AUDIO)
 elseif(AUDIO_BACKEND STREQUAL "ps2")
-    target_include_directories(butterscotch PUBLIC src/audio/ps2)
+    target_include_directories(sundae PUBLIC src/audio/ps2)
     add_compile_definitions(USE_PS2_AUDIO)
 endif()
 
@@ -210,8 +210,8 @@ add_library(stb_vorbis INTERFACE)
 target_include_directories(stb_vorbis SYSTEM INTERFACE ${CMAKE_SOURCE_DIR}/vendor/stb/vorbis)
 
 # RFC 1321 reference MD5 implementation
-target_sources(butterscotch PRIVATE vendor/md5/md5.c)
-target_include_directories(butterscotch PUBLIC vendor/md5)
+target_sources(sundae PRIVATE vendor/md5/md5.c)
+target_include_directories(sundae PUBLIC vendor/md5)
 
 # Steve Reid's SHA1 implementation
 add_library(sha1 STATIC vendor/sha1/sha1.c)
@@ -219,8 +219,8 @@ target_include_directories(sha1 SYSTEM PUBLIC vendor/sha1)
 target_compile_options(sha1 PRIVATE -w)
 
 # Base64 implementation
-target_sources(butterscotch PRIVATE vendor/base64/base64.c)
-target_include_directories(butterscotch PUBLIC vendor/base64)
+target_sources(sundae PRIVATE vendor/base64/base64.c)
+target_include_directories(sundae PUBLIC vendor/base64)
 
 # bzip2
 add_library(bzip2 STATIC
@@ -276,7 +276,7 @@ if(PLATFORM STREQUAL "cli" OR PLATFORM STREQUAL "vita" OR PLATFORM STREQUAL "swi
         set(VM_STUB_LOGS_DEFAULT ON)
     endif()
     # Matches the GitHub Actions container flags (FORTIFY requires building with optimizations enabled!)
-    target_compile_options(butterscotch PRIVATE "$<$<CONFIG:Release,RelWithDebInfo>:-U_FORTIFY_SOURCE;-D_FORTIFY_SOURCE=2>")
+    target_compile_options(sundae PRIVATE "$<$<CONFIG:Release,RelWithDebInfo>:-U_FORTIFY_SOURCE;-D_FORTIFY_SOURCE=2>")
 
     if(NOT ENABLE_LEGACY_GL AND NOT ENABLE_MODERN_GL)
         message(FATAL_ERROR "You must enable at least one renderer!")
@@ -284,17 +284,17 @@ if(PLATFORM STREQUAL "cli" OR PLATFORM STREQUAL "vita" OR PLATFORM STREQUAL "swi
     file(GLOB GL_SOURCES src/image/*.c src/gl_common/*.c)
     if(ENABLE_LEGACY_GL)
         file(GLOB GL_SOURCES ${GL_SOURCES} src/gl_legacy/*.c)
-        target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_legacy)
+        target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_legacy)
     endif()
     if(ENABLE_MODERN_GL)
         file(GLOB GL_SOURCES ${GL_SOURCES} src/gl/*.c)
     endif()
-    target_sources(butterscotch PRIVATE ${GL_SOURCES})
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/gl)
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_common)
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/image)
+    target_sources(sundae PRIVATE ${GL_SOURCES})
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/gl)
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_common)
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/image)
     if (MSVC)
-        target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/compat/getopt)
+        target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/compat/getopt)
         add_compile_definitions(NO_STRTOK_R)
         add_compile_definitions(NO_STRCASECMP)
     endif()
@@ -324,7 +324,7 @@ if(PLATFORM STREQUAL "cli" OR PLATFORM STREQUAL "vita" OR PLATFORM STREQUAL "swi
     endif()
 
     # stb_image
-    target_include_directories(butterscotch PUBLIC vendor/stb/image)
+    target_include_directories(sundae PUBLIC vendor/stb/image)
 
     set(PLATFORM_LIBRARIES bzip2 stb_ds sha1 stb_vorbis)
     if(NOT PLATFORM STREQUAL "vita" AND NOT PLATFORM STREQUAL "switch")
@@ -351,18 +351,18 @@ if(PLATFORM STREQUAL "cli" OR PLATFORM STREQUAL "vita" OR PLATFORM STREQUAL "swi
 
             # Target Windows 7+ (avoids referencing newer APIs like MapViewOfFileNuma2 that MinGW import libs don't provide)
             # https://github.com/mirror/mingw-w64/blob/master/mingw-w64-headers/include/sdkddkver.h
-            target_compile_definitions(butterscotch PRIVATE _WIN32_WINNT=0x0601 NTDDI_VERSION=0x06010000 WIN32_LEAN_AND_MEAN)
-            target_link_options(butterscotch PRIVATE -static)
+            target_compile_definitions(sundae PRIVATE _WIN32_WINNT=0x0601 NTDDI_VERSION=0x06010000 WIN32_LEAN_AND_MEAN)
+            target_link_options(sundae PRIVATE -static)
             set(BACKEND_LIBRARIES glfw opengl32 gdi32 winmm)
         elseif(MSVC)
-            target_compile_definitions(butterscotch PRIVATE WIN32_LEAN_AND_MEAN _CRT_SECURE_NO_WARNINGS)
+            target_compile_definitions(sundae PRIVATE WIN32_LEAN_AND_MEAN _CRT_SECURE_NO_WARNINGS)
             find_package(glfw3 CONFIG REQUIRED)
             set(BACKEND_LIBRARIES glfw opengl32 gdi32 winmm)
         else()
             find_package(PkgConfig REQUIRED)
             pkg_check_modules(GLFW3 REQUIRED glfw3)
-            target_include_directories(butterscotch PRIVATE ${GLFW3_INCLUDE_DIRS})
-            target_link_directories(butterscotch PRIVATE ${GLFW3_LIBRARY_DIRS})
+            target_include_directories(sundae PRIVATE ${GLFW3_INCLUDE_DIRS})
+            target_link_directories(sundae PRIVATE ${GLFW3_LIBRARY_DIRS})
             set(BACKEND_LIBRARIES ${GLFW3_LIBRARIES})
         endif()
     elseif(BACKEND STREQUAL "glfw2")
@@ -370,38 +370,38 @@ if(PLATFORM STREQUAL "cli" OR PLATFORM STREQUAL "vita" OR PLATFORM STREQUAL "swi
 
         find_package(PkgConfig REQUIRED)
         pkg_check_modules(GLFW2 REQUIRED libglfw)
-        target_include_directories(butterscotch PRIVATE ${GLFW2_INCLUDE_DIRS})
-        target_link_directories(butterscotch PRIVATE ${GLFW2_LIBRARY_DIRS})
+        target_include_directories(sundae PRIVATE ${GLFW2_INCLUDE_DIRS})
+        target_link_directories(sundae PRIVATE ${GLFW2_LIBRARY_DIRS})
         set(BACKEND_LIBRARIES ${GLFW2_LIBRARIES})
     elseif(BACKEND STREQUAL "sdl1")
         add_compile_definitions(USE_SDL1)
 
         find_package(SDL REQUIRED)
-        target_include_directories(butterscotch PUBLIC ${SDL_INCLUDE_DIR})
+        target_include_directories(sundae PUBLIC ${SDL_INCLUDE_DIR})
         set(BACKEND_LIBRARIES ${SDL_LIBRARY})
     elseif(BACKEND STREQUAL "sdl2")
         add_compile_definitions(USE_SDL2)
 
         find_package(PkgConfig REQUIRED)
         pkg_check_modules(SDL2 REQUIRED sdl2)
-        target_include_directories(butterscotch PRIVATE ${SDL2_INCLUDE_DIRS})
-        target_link_directories(butterscotch PRIVATE ${SDL2_LIBRARY_DIRS})
+        target_include_directories(sundae PRIVATE ${SDL2_INCLUDE_DIRS})
+        target_link_directories(sundae PRIVATE ${SDL2_LIBRARY_DIRS})
         set(BACKEND_LIBRARIES ${SDL2_LIBRARIES})
     elseif(BACKEND STREQUAL "sdl3")
         add_compile_definitions(USE_SDL3)
 
         find_package(PkgConfig REQUIRED)
         pkg_check_modules(SDL3 REQUIRED sdl3)
-        target_include_directories(butterscotch PRIVATE ${SDL3_INCLUDE_DIRS})
-        target_link_directories(butterscotch PRIVATE ${SDL3_LIBRARY_DIRS})
+        target_include_directories(sundae PRIVATE ${SDL3_INCLUDE_DIRS})
+        target_link_directories(sundae PRIVATE ${SDL3_LIBRARY_DIRS})
         set(BACKEND_LIBRARIES ${SDL3_LIBRARIES})
     elseif(BACKEND STREQUAL "appkit")
         add_compile_definitions(USE_APPKIT)
-        target_compile_definitions(butterscotch PRIVATE GL_SILENCE_DEPRECATION)
+        target_compile_definitions(sundae PRIVATE GL_SILENCE_DEPRECATION)
         set(BACKEND_LIBRARIES "-framework Cocoa" "-framework GameController")
     endif()
     if (PLATFORM STREQUAL "vita")
-        target_link_libraries(butterscotch PRIVATE
+        target_link_libraries(sundae PRIVATE
             ${BACKEND_LIBRARIES}
             ${AUDIO_LIBRARIES}
             ${PLATFORM_LIBRARIES}
@@ -412,24 +412,24 @@ if(PLATFORM STREQUAL "cli" OR PLATFORM STREQUAL "vita" OR PLATFORM STREQUAL "swi
             SceShaccCg_stub
         )
 
-        vita_create_self(eboot.bin butterscotch UNSAFE)
+        vita_create_self(eboot.bin sundae UNSAFE)
         vita_create_vpk(Butterscotch.vpk ${VITA_TITLEID} eboot.bin
             VERSION ${VITA_VERSION}
             NAME ${VITA_APP_NAME}
         )
     else()
-        target_link_libraries(butterscotch PRIVATE ${BACKEND_LIBRARIES} ${AUDIO_LIBRARIES} ${PLATFORM_LIBRARIES})
+        target_link_libraries(sundae PRIVATE ${BACKEND_LIBRARIES} ${AUDIO_LIBRARIES} ${PLATFORM_LIBRARIES})
 
         if (PLATFORM STREQUAL "switch")
-            target_link_libraries(butterscotch PRIVATE GLESv2 stdc++)
+            target_link_libraries(sundae PRIVATE GLESv2 stdc++)
             nx_generate_nacp(OUTPUT Butterscotch.nacp NAME "Butterscotch" AUTHOR "Butterscotch" VERSION "1.0.0")
-            nx_create_nro(butterscotch NACP Butterscotch.nacp)
+            nx_create_nro(sundae NACP Butterscotch.nacp)
         endif()
     endif()
     if(BACKEND STREQUAL "appkit")
-        target_sources(butterscotch PRIVATE src/backends/${BACKEND}.m)
+        target_sources(sundae PRIVATE src/backends/${BACKEND}.m)
     else()
-        target_sources(butterscotch PRIVATE src/backends/${BACKEND}.c)
+        target_sources(sundae PRIVATE src/backends/${BACKEND}.c)
     endif()
 
     # Enable AddressSanitizer by default in Debug builds
@@ -440,36 +440,36 @@ if(PLATFORM STREQUAL "cli" OR PLATFORM STREQUAL "vita" OR PLATFORM STREQUAL "swi
     endif()
     set(ENABLE_ASAN ${ENABLE_ASAN_DEFAULT} CACHE BOOL "Enable AddressSanitizer")
     if(ENABLE_ASAN AND NOT WIN32 AND NOT CMAKE_SYSTEM_NAME STREQUAL "Haiku")
-        target_compile_options(butterscotch PRIVATE -fsanitize=address -fno-omit-frame-pointer)
-        target_link_options(butterscotch PRIVATE -fsanitize=address)
+        target_compile_options(sundae PRIVATE -fsanitize=address -fno-omit-frame-pointer)
+        target_link_options(sundae PRIVATE -fsanitize=address)
     endif()
 
     #gamecontrollerdb
-    add_custom_command(TARGET butterscotch POST_BUILD
+    add_custom_command(TARGET sundae POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${CMAKE_SOURCE_DIR}/vendor/gamecontrollerdb.txt
-            $<TARGET_FILE_DIR:butterscotch>/gamecontrollerdb.txt
+            $<TARGET_FILE_DIR:sundae>/gamecontrollerdb.txt
     )
 elseif(PLATFORM STREQUAL "web")
     if (NOT ENABLE_MODERN_GL)
         message(FATAL_ERROR "Web requires modern gl!")
     endif()
     file(GLOB GL_SOURCES src/gl/*.c src/gl_common/*.c src/image/*.c)
-    target_sources(butterscotch PRIVATE ${GL_SOURCES})
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/gl)
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_common)
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/image)
+    target_sources(sundae PRIVATE ${GL_SOURCES})
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/gl)
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_common)
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/image)
 
     # stb_image
-    target_include_directories(butterscotch PUBLIC vendor/stb/image)
+    target_include_directories(sundae PUBLIC vendor/stb/image)
 
     # bzip2
-    target_link_libraries(butterscotch PRIVATE bzip2 stb_ds sha1 stb_vorbis)
+    target_link_libraries(sundae PRIVATE bzip2 stb_ds sha1 stb_vorbis)
 
-    set_target_properties(butterscotch PROPERTIES SUFFIX ".mjs")
+    set_target_properties(sundae PROPERTIES SUFFIX ".mjs")
 
     target_link_options(
-            butterscotch
+            sundae
             PRIVATE
             "-sMODULARIZE=1"
             "-sEXPORT_ES6=1"
@@ -488,17 +488,17 @@ elseif(PLATFORM STREQUAL "web")
             "-pthread"
     )
 
-    target_compile_options(butterscotch PRIVATE "-pthread")
+    target_compile_options(sundae PRIVATE "-pthread")
 elseif(PLATFORM STREQUAL "web-meta")
-    set_target_properties(butterscotch PROPERTIES
+    set_target_properties(sundae PROPERTIES
         SUFFIX ".mjs"
-        OUTPUT_NAME "butterscotch-meta"
+        OUTPUT_NAME "sundae-meta"
     )
 
-    target_link_libraries(butterscotch PRIVATE stb_ds)
+    target_link_libraries(sundae PRIVATE stb_ds)
 
     target_link_options(
-            butterscotch
+            sundae
             PRIVATE
             "-sMODULARIZE=1"
             "-sEXPORT_ES6=1"
@@ -513,10 +513,10 @@ elseif(PLATFORM STREQUAL "android")
         message(FATAL_ERROR "Android requires modern gl!")
     endif()
     file(GLOB GL_SOURCES src/gl/*.c src/gl_common/*.c src/image/*.c)
-    target_sources(butterscotch PRIVATE ${GL_SOURCES})
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/gl)
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_common)
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/image)
+    target_sources(sundae PRIVATE ${GL_SOURCES})
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/gl)
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_common)
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/image)
     add_compile_definitions(ENABLE_GLES PLATFORM_ANDROID)
 
     # Butterscotch VM/interpreter profiler
@@ -550,21 +550,21 @@ elseif(PLATFORM STREQUAL "android")
     endif()
 
     # stb_image
-    target_include_directories(butterscotch PUBLIC vendor/stb/image)
+    target_include_directories(sundae PUBLIC vendor/stb/image)
     # stb_vorbis (for miniaudio's OGG decoding)
-    target_include_directories(butterscotch PUBLIC vendor/stb/vorbis)
+    target_include_directories(sundae PUBLIC vendor/stb/vorbis)
     # bzip2
-    target_link_libraries(butterscotch PRIVATE bzip2)
+    target_link_libraries(sundae PRIVATE bzip2)
 
     # Android NDK system libraries:
     # - log: __android_log_*
     # - GLESv3: OpenGL ES 3.0 functions
     # - OpenSLES: miniaudio's OpenSL ES backend (it dlopen's libaaudio.so at runtime when available, so no link-time aaudio dep)
-    target_link_libraries(butterscotch PRIVATE log GLESv3 OpenSLES bzip2 stb_ds sha1 stb_vorbis)
+    target_link_libraries(sundae PRIVATE log GLESv3 OpenSLES bzip2 stb_ds sha1 stb_vorbis)
 elseif(PLATFORM STREQUAL "ps2")
     file(GLOB DEBUG_FONT_SOURCES src/debug_font/*.c)
-    target_sources(butterscotch PRIVATE ${DEBUG_FONT_SOURCES})
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/debug_font)
+    target_sources(sundae PRIVATE ${DEBUG_FONT_SOURCES})
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/debug_font)
 
     # The PS2 EE has a single-precision FPU only, so double is software-emulated
     add_compile_definitions(USE_FLOAT_REALS)
@@ -613,13 +613,13 @@ elseif(PLATFORM STREQUAL "ps2")
     # -fsingle-precision-constant: Treat unsuffixed float constants as single-precision to avoid accidental  float->double promotions on platforms with no hardware double
     # -Werror=double-promotion: Warn when something is being promoted to a double
     # -Wno-format: because there are too many formatting issues that, at the end of the day, do not matter
-    target_compile_options(butterscotch PRIVATE -fsingle-precision-constant -Werror=double-promotion -Wno-format)
+    target_compile_options(sundae PRIVATE -fsingle-precision-constant -Werror=double-promotion -Wno-format)
 
     if(PS2)
         # Compiling on the Docker container
-        target_include_directories(butterscotch PRIVATE $ENV{PS2SDK}/ee/include $ENV{PS2SDK}/common/include $ENV{PS2DEV}/ee/include $ENV{GSKIT}/include)
-        target_link_directories(butterscotch PRIVATE $ENV{PS2SDK}/ee/lib $ENV{GSKIT}/lib)
-        target_link_libraries(${AUDIO_LIBRARIES} butterscotch gskit dmakit audsrv pad mc kbd patches kernel c m stb_ds sha1)
+        target_include_directories(sundae PRIVATE $ENV{PS2SDK}/ee/include $ENV{PS2SDK}/common/include $ENV{PS2DEV}/ee/include $ENV{GSKIT}/include)
+        target_link_directories(sundae PRIVATE $ENV{PS2SDK}/ee/lib $ENV{GSKIT}/lib)
+        target_link_libraries(${AUDIO_LIBRARIES} sundae gskit dmakit audsrv pad mc kbd patches kernel c m stb_ds sha1)
 
         # Embed ps2sdk IRX modules (freesio2, freepad) as C arrays via bin2c
         # This avoids loading from rom0: which has compatibility issues between fat/slim PS2
@@ -679,18 +679,18 @@ elseif(PLATFORM STREQUAL "ps2")
             )
         endif()
 
-        target_sources(butterscotch PRIVATE ${IRX_GEN_DIR}/freesio2_irx.c ${IRX_GEN_DIR}/mcman_irx.c ${IRX_GEN_DIR}/mcserv_irx.c ${IRX_GEN_DIR}/freepad_irx.c ${IRX_GEN_DIR}/usbd_irx.c ${IRX_GEN_DIR}/ps2kbd_irx.c)
+        target_sources(sundae PRIVATE ${IRX_GEN_DIR}/freesio2_irx.c ${IRX_GEN_DIR}/mcman_irx.c ${IRX_GEN_DIR}/mcserv_irx.c ${IRX_GEN_DIR}/freepad_irx.c ${IRX_GEN_DIR}/usbd_irx.c ${IRX_GEN_DIR}/ps2kbd_irx.c)
         if(AUDIO_BACKEND STREQUAL "ps2")
-            target_sources(butterscotch PRIVATE ${IRX_GEN_DIR}/freesd_irx.c ${IRX_GEN_DIR}/audsrv_irx.c)
+            target_sources(sundae PRIVATE ${IRX_GEN_DIR}/freesd_irx.c ${IRX_GEN_DIR}/audsrv_irx.c)
         endif()
-        target_include_directories(butterscotch PRIVATE ${IRX_GEN_DIR})
+        target_include_directories(sundae PRIVATE ${IRX_GEN_DIR})
 
         # ===[ gprof Profiling Support ]===
         option(ENABLE_GPROF_PROFILING "Enable gprof profiling for PS2" OFF)
         if(ENABLE_GPROF_PROFILING)
             add_compile_definitions(GPROF_PROFILING)
-            target_compile_options(butterscotch PRIVATE -pg)
-            target_link_options(butterscotch PRIVATE -pg)
+            target_compile_options(sundae PRIVATE -pg)
+            target_link_options(sundae PRIVATE -pg)
 
             add_custom_command(
                 OUTPUT ${IRX_GEN_DIR}/bdm_irx.c
@@ -710,7 +710,7 @@ elseif(PLATFORM STREQUAL "ps2")
                 DEPENDS ${IRX_DIR}/usbmass_bd.irx
                 COMMENT "Embedding usbmass_bd.irx (profiler)"
             )
-            target_sources(butterscotch PRIVATE
+            target_sources(sundae PRIVATE
                 ${IRX_GEN_DIR}/bdm_irx.c
                 ${IRX_GEN_DIR}/bdmfs_fatfs_irx.c
                 ${IRX_GEN_DIR}/usbmass_bd_irx.c
@@ -728,9 +728,9 @@ elseif(PLATFORM STREQUAL "ps2")
 
         # _EE is normally set by the PS2 toolchain; without it, tamtypes.h
         # refuses to define u64/u32/etc. We set it so CLion can resolve them.
-        target_compile_definitions(butterscotch PRIVATE _EE)
+        target_compile_definitions(sundae PRIVATE _EE)
 
-        target_include_directories(butterscotch PRIVATE
+        target_include_directories(sundae PRIVATE
                 ${PS2SDK_EE_INCLUDES}
                 ${PS2SDK_EE_RPC_INCLUDES}
                 ${PS2SDK_EE_NETWORK_INCLUDES}
@@ -748,11 +748,11 @@ elseif(PLATFORM STREQUAL "ps3")
     endif()
     file(GLOB GL_SOURCES src/gl_common/*.c src/gl_legacy/*.c src/image/*.c)
     file(GLOB DEBUG_FONT_SOURCES src/debug_font/*.c)
-    target_sources(butterscotch PRIVATE ${GL_SOURCES} ${DEBUG_FONT_SOURCES})
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_legacy)
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/image)
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/debug_font)
-    target_include_directories(butterscotch PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_common)
+    target_sources(sundae PRIVATE ${GL_SOURCES} ${DEBUG_FONT_SOURCES})
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_legacy)
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/image)
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/debug_font)
+    target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/gl_common)
 
     # ps3gl
     file(GLOB PS3GL_SOURCES vendor/ps3gl/*.c)
@@ -797,7 +797,7 @@ elseif(PLATFORM STREQUAL "ps3")
     endif()
 
     # stb_image
-    target_include_directories(butterscotch PUBLIC vendor/stb/image)
+    target_include_directories(sundae PUBLIC vendor/stb/image)
 
     # Platform identifier for PS3-specific code paths
     add_compile_definitions(PLATFORM_PS3)
@@ -806,10 +806,10 @@ elseif(PLATFORM STREQUAL "ps3")
     set(CMAKE_EXE_LINKER_FLAGS "-mhard-float -fmodulo-sched -Wl,--gc-sections -L$ENV{PS3DEV}/ppu/lib -L$ENV{PS3DEV}/portlibs/ppu/lib")
 
     find_package(SDL2 REQUIRED)
-    target_include_directories(butterscotch PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_include_directories(sundae PRIVATE ${SDL2_INCLUDE_DIRS})
     # mojoal calls SDL atomics/threads, so SDL2 must link after it (static link order)
     target_link_libraries(mojoal PUBLIC ${SDL2_LIBRARIES})
-    target_link_libraries(butterscotch PRIVATE bzip2 sha1 ps3gl mojoal ${SDL2_LIBRARIES} gcm_sys rsx sysutil io audio rt lv2 m stb_ds stb_vorbis)
+    target_link_libraries(sundae PRIVATE bzip2 sha1 ps3gl mojoal ${SDL2_LIBRARIES} gcm_sys rsx sysutil io audio rt lv2 m stb_ds stb_vorbis)
 elseif(PLATFORM STREQUAL "vita")
 else()
     message(FATAL_ERROR "Unknown platform! ${PLATFORM}")
