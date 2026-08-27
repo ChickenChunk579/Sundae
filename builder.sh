@@ -28,7 +28,7 @@ else
     exit 1
 fi
 
-CMAKE_FLAGS="-B build/$1 -S . -GNinja "
+CMAKE_FLAGS="-B build/$1 -S . -GNinja -DCMAKE_EXPORT_COMPILE_COMMANDS=1 "
 if [[ $1 == "mac" ]]; then
     CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=appkit" 
 else

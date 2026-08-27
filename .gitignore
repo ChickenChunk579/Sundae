@@ -7,3 +7,4 @@ compat/config.mk
 /.vs
 *.log
 games/
+.vscode/
