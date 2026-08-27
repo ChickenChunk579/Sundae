@@ -31,21 +31,30 @@ fi
 CMAKE_FLAGS="-B build/$1 -S . -GNinja -DCMAKE_EXPORT_COMPILE_COMMANDS=1 "
 if [[ $1 == "mac" ]]; then
     CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=appkit -DVIDEO_BACKEND=ffmpeg" 
+elif [[ $1 == "linux" ]]; then
+    CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=sdl3 -DVIDEO_BACKEND=ffmpeg"
 else
-    echo unknown platform: $1
+    echo "unknown platform: $1"
     exit 1
 fi
 
 echo invoking cmake
 $CMAKE $CMAKE_FLAGS
 
-if [[ $2 == "build" || $2 == "run" ]]; then
-    $CMAKE --build build/$1
+if [[ $2 == "clean" ]]; then
+    $CMAKE --build "build/$1" --target clean
+    echo "done cleaning"
+elif [[ $2 == "build" || $2 == "run" ]]; then
+    $CMAKE --build "build/$1"
     if [[ $2 == "run" ]]; then
-        ./build/$1/sundae ${@:3}
+        "./build/$1/sundae" "${@:3}"
     else
-        echo done
+        echo "done building"
     fi
+elif [[ $2 == "conf" ]]; then
+    echo "done configuring"
 else
-    echo done
+    echo "unknown action: $2"
+    exit 1
 fi
+

@@ -96,13 +96,6 @@ static void mutex_unlock(Mutex* m) {
     pthread_mutex_unlock(m);
 #endif
 }
-static void mutex_destroy(Mutex* m) {
-#ifdef _WIN32
-    DeleteCriticalSection(m);
-#else
-    pthread_mutex_destroy(m);
-#endif
-}
 static void cond_init(CondVar* c) {
 #ifdef _WIN32
     InitializeConditionVariable(c);
@@ -187,6 +180,7 @@ static void queue_clear(PacketQueue* q) {
 
 // --- Background Threads ---
 static THREAD_RETURN demux_loop(void* arg) {
+    (void)arg;
     AVPacket* packet = av_packet_alloc();
     while (!g_VideoPlayer.stopThreads) {
         if (g_VideoPlayer.status == VIDEO_STATUS_PAUSED) {
@@ -218,6 +212,7 @@ static THREAD_RETURN demux_loop(void* arg) {
 }
 
 static THREAD_RETURN decode_loop(void* arg) {
+    (void)arg;
     AVFrame* frame = av_frame_alloc();
     while (!g_VideoPlayer.stopThreads) {
         if (g_VideoPlayer.status == VIDEO_STATUS_PAUSED) {
@@ -433,6 +428,9 @@ RValue video_close(VMContext* ctx, RValue* args, int32_t argCount) {
 }
 
 RValue video_resume(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx;
+    (void)args;
+    (void)argCount;
     if (g_VideoPlayer.status == VIDEO_STATUS_PAUSED) {
         double currentPos = g_VideoPlayer.currentPosSec;
         // Shift the anchor time so playback resumes exactly where it left off
@@ -443,6 +441,7 @@ RValue video_resume(VMContext* ctx, RValue* args, int32_t argCount) {
 }
 
 RValue video_seek_to(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx;
     if (argCount < 1 || g_VideoPlayer.status == VIDEO_STATUS_CLOSED) return RValue_makeUndefined();
 
     double targetMs = RValue_toReal(args[0]);
@@ -504,26 +503,42 @@ RValue video_draw(VMContext* ctx, RValue* args, int32_t argCount) {
 }
 
 RValue video_get_status(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx;
+    (void)args;
+    (void)argCount;
     return RValue_makeInt32((int32_t)g_VideoPlayer.status);
 }
 
 RValue video_get_format(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx;
+    (void)args;
+    (void)argCount;
     return RValue_makeInt32(0); // 0 = RGBA color space fallback
 }
 
 RValue video_get_duration(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx;
+    (void)args;
+    (void)argCount;
     return RValue_makeReal(g_VideoPlayer.durationSec * 1000.0); // Converted to milliseconds
 }
 
 RValue video_get_position(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx;
+    (void)args;
+    (void)argCount;
     return RValue_makeReal(g_VideoPlayer.currentPosSec * 1000.0); // Converted to milliseconds
 }
 
 RValue video_get_volume(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx;
+    (void)args;
+    (void)argCount;
     return RValue_makeReal(g_VideoPlayer.volume);
 }
 
 RValue video_set_volume(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx;
     if (argCount >= 1) {
         g_VideoPlayer.volume = RValue_toReal(args[0]);
     }
@@ -531,6 +546,7 @@ RValue video_set_volume(VMContext* ctx, RValue* args, int32_t argCount) {
 }
 
 RValue video_enable_loop(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx;
     if (argCount >= 1) {
         g_VideoPlayer.loopEnabled = RValue_toBool(args[0]);
     }
@@ -538,6 +554,9 @@ RValue video_enable_loop(VMContext* ctx, RValue* args, int32_t argCount) {
 }
 
 RValue video_pause(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx;
+    (void)args;
+    (void)argCount;
     if (g_VideoPlayer.status == VIDEO_STATUS_PLAYING) {
         g_VideoPlayer.status = VIDEO_STATUS_PAUSED;
     }

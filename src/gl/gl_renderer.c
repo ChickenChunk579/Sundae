@@ -2951,6 +2951,20 @@ static bool glShadersSupported(void) {
     return true;
 }
 
+int32_t glVideoUploadFrame(Renderer* renderer, int32_t width, int32_t height, const uint8_t* rgba) {
+    GLRenderer* gl = (GLRenderer*)renderer;
+    if (width <= 0 || height <= 0 || rgba == nullptr) return -1;
+    if (gl->videoSurfaceId < 0 || !glSurfaceExists(renderer, gl->videoSurfaceId)) {
+        gl->videoSurfaceId = glCreateSurface(renderer, width, height);
+    } else if (gl->surfaceWidth[gl->videoSurfaceId] != width || gl->surfaceHeight[gl->videoSurfaceId] != height) {
+        glSurfaceResize(renderer, gl->videoSurfaceId, width, height);
+    }
+    if (gl->videoSurfaceId < 0) return -1;
+    glBindTexture(GL_TEXTURE_2D, gl->surfaceTexture[gl->videoSurfaceId]);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+    return gl->videoSurfaceId;
+}
+
 static void glSetMatrix(Renderer* renderer, int32_t matrixType, Matrix4f matrix) {
     GLRenderer* gl = (GLRenderer*) renderer;
     flushBatch(gl);
@@ -3052,6 +3066,7 @@ Renderer* GLRenderer_create(void) {
     glVtable.shaderIsCompiled = glShaderIsCompiled,
     glVtable.shadersSupported = glShadersSupported,
     glVtable.setMatrix = glSetMatrix,
+    glVtable.videoUploadFrame = glVideoUploadFrame,
 
     gl->base.drawColor = 0xFFFFFF; // white (BGR)
     gl->base.drawAlpha = 1.0f;
