@@ -42,7 +42,7 @@ $CMAKE $CMAKE_FLAGS
 if [[ $2 == "build" || $2 == "run" ]]; then
     $CMAKE --build build/$1
     if [[ $2 == "run" ]]; then
-        ./build/$1/butterscotch ${@:3}
+        ./build/$1/sundae ${@:3}
     else
         echo done
     fi

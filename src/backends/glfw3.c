@@ -81,7 +81,7 @@ static GLFWwindow *tryOpenWindow(int reqW, int reqH, const char* title) {
 
 void platformSetWindowTitle(const char* title) {
     char windowTitle[256];
-    snprintf(windowTitle, sizeof(windowTitle), "Butterscotch - %s", title);
+    snprintf(windowTitle, sizeof(windowTitle), "Sundae - %s", title);
     glfwSetWindowTitle(window, windowTitle);
 }
 

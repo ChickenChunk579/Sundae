@@ -548,7 +548,7 @@ int loop(CommandLineArgs args, const char *argv0) {
 
         // Build window title
         char windowTitle[256];
-        snprintf(windowTitle, sizeof(windowTitle), "Butterscotch - %s", gen8->displayName);
+        snprintf(windowTitle, sizeof(windowTitle), "Sundae - %s", gen8->displayName);
 
         // Initialize VM
         VMContext* vm = VM_create(dataWin);

@@ -96,7 +96,7 @@ static SDL_Window *tryOpenWindow(int reqW, int reqH, const char* title, Uint32 f
 
 void platformSetWindowTitle(const char* title) {
     char windowTitle[256];
-    snprintf(windowTitle, sizeof(windowTitle), "Butterscotch - %s", title);
+    snprintf(windowTitle, sizeof(windowTitle), "Sundae - %s", title);
     SDL_SetWindowTitle(window, windowTitle);
 }
 

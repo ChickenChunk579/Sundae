@@ -301,7 +301,7 @@ static int nsKeyToGML(unsigned short keyCode)
 @end
 
 void platformSetWindowTitle(const char* title) {
-    [window setTitle:[NSString stringWithFormat:@"Butterscotch - %s", title]];
+    [window setTitle:[NSString stringWithFormat:@"Sundae - %s", title]];
 }
 
 bool platformGetWindowSize(int32_t *outW, int32_t *outH) {

@@ -203,7 +203,7 @@ static void loadGamepadMappings(void) {
 }
 void platformSetWindowTitle(const char* title) {
     char windowTitle[256];
-    snprintf(windowTitle, sizeof(windowTitle), "Butterscotch - %s", title);
+    snprintf(windowTitle, sizeof(windowTitle), "Sundae - %s", title);
     SDL_WM_SetCaption(windowTitle, NULL);
 }
 
