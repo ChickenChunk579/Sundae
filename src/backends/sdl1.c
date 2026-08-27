@@ -207,6 +207,51 @@ void platformSetWindowTitle(const char* title) {
     SDL_WM_SetCaption(windowTitle, NULL);
 }
 
+#ifndef __APPLE__
+
+void platformSetFullscreen(bool newState) {
+#if defined(__linux__) || defined(__unix__)
+    if (platformGetFullscreen() != newState) {
+        if (scr) {
+            SDL_WM_ToggleFullScreen(scr);
+        }
+    }
+#else
+    if (!scr) return;
+
+    Uint32 flags = scr->flags;
+
+    if (newState)
+        flags |= SDL_FULLSCREEN;
+    else
+        flags &= ~SDL_FULLSCREEN;
+
+    scr = SDL_SetVideoMode(
+        scr->w,
+        scr->h,
+        scr->format->BitsPerPixel,
+        flags
+    );
+#endif
+}
+
+bool platformGetFullscreen() {
+    return (scr->flags & SDL_FULLSCREEN) != 0;
+}
+
+#else
+bool platformGetFullscreen() {
+    return false;
+}
+
+void platformSetFullscreen(bool newState) {
+    
+}
+
+#endif
+
+
+
 bool platformGetWindowSize(int32_t* outW, int32_t* outH) {
     if (!outW || !outH) return false;
     *outW = fbWidth;

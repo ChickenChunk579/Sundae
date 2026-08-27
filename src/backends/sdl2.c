@@ -100,6 +100,16 @@ void platformSetWindowTitle(const char* title) {
     SDL_SetWindowTitle(window, windowTitle);
 }
 
+void platformSetFullscreen(bool newState) {
+    SDL_SetWindowFullscreen(window, newState);
+}
+
+bool platformGetFullscreen() {
+    Uint64 flags = SDL_GetWindowFlags(window);
+    return flags & SDL_WINDOW_FULLSCREEN;
+}
+
+
 bool platformGetWindowSize(int32_t* outW, int32_t* outH) {
     if (!outW || !outH) return false;
     if (gfx == SOFTWARE) {

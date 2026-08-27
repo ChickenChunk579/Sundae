@@ -1,0 +1,1 @@
+./builder.sh mac-sdl3 run games/dr/data.win | grep -oP '(?<=Stubbed function ")[^"]+|(?<=Unknown chunk: )\w+'

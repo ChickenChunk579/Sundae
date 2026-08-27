@@ -1,0 +1,21 @@
+(nix:sundae-env-env) [sundae] rhys@Mac:~/Sundae$ ./builder.sh mac-sdl3 run games/dr/data.win | grep -oP '(?<=Stubbed function ")[^"]+|(?<=Unknown chunk: )\w+'
+-- Video backend: ffmpeg
+Warning: VM: [gml_Script_anon_gml_Object_obj_init_pc_Create_0_145_gml_Object_obj_init_pc_Create_0] Stubbed function "display_get_height"!
+Warning: VM: [gml_Script_anon_gml_Object_obj_init_pc_Create_0_145_gml_Object_obj_init_pc_Create_0] Stubbed function "display_get_width"!
+Warning: FEAT
+VM: [gml_Script___init_d3d] Unknown function "vertex_create_buffer"!
+Warning: VM: [gml_Script___init_d3d] Unknown function "vertex_format_begin"!
+Warning: VM: [gml_Script___init_d3d] Unknown function "vertex_format_add_position_3d"!
+Warning: VM: [gml_Script___init_d3d] Unknown function "vertex_format_add_normal"!
+Warning: VM: [gml_Script___init_d3d] Unknown function "vertex_format_add_colour"!
+Warning: VM: [gml_Script___init_d3d] Unknown function "vertex_format_add_textcoord"!
+Warning: VM: [gml_Script___init_d3d] Unknown function "vertex_format_end"!
+FEAT
+Warning: VM: [gml_Script_scr_prefetch_textures] Unknown function "texturegroup_get_textures"!
+Warning: VM: [gml_Object_obj_time_Create_0] Stubbed function "display_get_height"!
+Warning: VM: [gml_Object_obj_time_Create_0] Stubbed function "display_get_width"!
+Warning: VM: [gml_Script_scr_save] Unknown function "date_current_datetime"!
+Warning: VM: [gml_Object_obj_encounterbasic_Create_0] PushEnv with negative target -163040246, this could be a Int64 number that is getting truncated to Int32!
+Warning: VM: [gml_Object_obj_encounterbasic_Create_0] PushEnv with negative target -163040246, this could be a Int64 number that is getting truncated to Int32!
+Warning: VM: [gml_Object_obj_encounterbasic_Create_0] PushEnv with negative target -163040246, this could be a Int64 number that is getting truncated to Int32!
+Warning: VM: [gml_Object_obj_encounterbasic_Create_0] PushEnv with negative target -163040246, this could be a Int64 number that is getting truncated to Int32!
