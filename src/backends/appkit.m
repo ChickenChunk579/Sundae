@@ -56,7 +56,7 @@ static void appkitMapControllerToSlot(GCController *controller, GamepadSlot *slo
     slot->guid[sizeof(slot->guid) - 1] = '\0';
 
     GCExtendedGamepad *extended = controller.extendedGamepad;
-    GCGamepad *gamepad = controller.gamepad;
+    GCExtendedGamepad *gamepad = controller.extendedGamepad;
     GCMicroGamepad *micro = controller.microGamepad;
 
     if (extended) {
