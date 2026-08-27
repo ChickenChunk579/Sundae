@@ -17373,6 +17373,42 @@ static RValue builtin_sprite_get_info(VMContext* ctx, RValue* args, int32_t argC
     return RValue_makeStructAndIncRef(ret);
 }
 
+
+
+static double get_datetime(void) {
+    time_t now = time(NULL);
+    
+    double days_since_unix_epoch = (double)now / 86400.0;
+    
+    return days_since_unix_epoch;
+}
+
+static RValue builtin_date_current_datetime(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx; (void)args; (void)argCount;
+
+    double gm_time = get_datetime();
+    
+    return RValue_makeReal(gm_time); 
+}
+
+static RValue builtin_date_second_span(VMContext* ctx, RValue* args, int32_t argCount) {
+    (void)ctx; (void)argCount;
+
+    if (argCount < 2) {
+        return RValue_makeReal(0.0);
+    }
+
+    double time1 = RValue_toReal(args[0]);
+    double time2 = RValue_toReal(args[1]);
+
+    double diff_days = (time1 > time2) ? (time1 - time2) : (time2 - time1);
+
+    double seconds = diff_days * 86400.0;
+
+    return RValue_makeReal(seconds);
+}
+
+
 // ===[ REGISTRATION ]===
 
 void VMBuiltins_registerAll(VMContext* ctx) {
@@ -18525,4 +18561,6 @@ void VMBuiltins_registerAll(VMContext* ctx) {
     VM_registerBuiltin(ctx, "video_set_volume", video_set_volume);
     VM_registerBuiltin(ctx, "video_enable_loop", video_enable_loop);
 
+    VM_registerBuiltin(ctx, "date_current_datetime", builtin_date_current_datetime);
+    VM_registerBuiltin(ctx, "date_second_span", builtin_date_second_span);
 }

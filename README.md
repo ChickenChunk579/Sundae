@@ -22,3 +22,4 @@ Untested platforms
 ## Additions
 * Video playback, fixing DELTARUNE Chapter 3 and 5.
 * Fullscreen support
+* Datetime support, fixing Undertale Yellow playtime

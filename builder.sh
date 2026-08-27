@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 if [ "$#" -lt 2 ]; then
     echo "please pass a target, an action, and any optional arguments"
