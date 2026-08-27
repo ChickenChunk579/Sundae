@@ -52,6 +52,7 @@
 
 // Sentinel used when beginGUI should render to the host framebuffer.
 #define RENDER_TARGET_HOST_FRAMEBUFFER (-1)
+#define RENDERER_VIDEO_SURFACE_ID (-2)
 
 // Nine-slice tile mode constants
 #define NS_STRETCH    0
@@ -167,6 +168,8 @@ typedef struct {
     bool (*shaderIsCompiled)(Renderer* renderer, int32_t shader);
     bool (*shadersSupported)(void);
     void (*setMatrix)(Renderer* renderer, int32_t matrixType, Matrix4f matrix);
+    // Uploads the latest decoded RGBA video frame and returns its surface ID.
+    int32_t (*videoUploadFrame)(Renderer* renderer, int32_t width, int32_t height, const uint8_t* rgba);
 } RendererVtable;
 
 // ===[ Renderer Base Struct ]===

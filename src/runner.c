@@ -4083,6 +4083,56 @@ void Runner_step(Runner* runner) {
         arrfree(pending);
     }
 
+    // Fire pending video async events.
+    if (runner->asyncVideoQueue != nullptr) {
+        AsyncVideoEvent* pending = runner->asyncVideoQueue;
+        runner->asyncVideoQueue = nullptr;
+
+        repeat((int32_t) arrlen(pending), idx) {
+            AsyncVideoEvent* event = &pending[idx];
+
+            DsMapEntry* map = nullptr;
+            arrput(runner->dsMapPool, map);
+            int32_t mapId = arrlen(runner->dsMapPool) - 1;
+
+            DsMapEntry** mapPtr = &runner->dsMapPool[mapId];
+
+            logDebug("Runner: dispatching async video event: %s\n", event->type != nullptr ? event->type : "unknown");
+
+            shput(
+                *mapPtr,
+                safeStrdup("type"),
+                RValue_makeOwnedString(event->type)
+            );
+
+            // Ownership transferred to the RValue.
+            event->type = nullptr;
+
+            runner->asyncLoadMapId = mapId;
+            Runner_executeEventForAll(runner, EVENT_OTHER, OTHER_ASYNC_SOCIAL);
+
+            // Clean up ds_map.
+            mapPtr = &runner->dsMapPool[mapId];
+            if (*mapPtr != nullptr) {
+                repeat(shlen(*mapPtr), j) {
+                    free((*mapPtr)[j].key);
+                    RValue_free(&(*mapPtr)[j].value);
+                }
+
+                shfree(*mapPtr);
+                *mapPtr = nullptr;
+            }
+
+            runner->asyncLoadMapId = -1;
+        }
+
+        repeat((int32_t) arrlen(pending), idx) {
+            free(pending[idx].type);
+        }
+
+        arrfree(pending);
+    }
+
     // Dispatch collision events
     dispatchCollisionEvents(runner);
 
@@ -4597,6 +4647,9 @@ void Runner_free(Runner* runner) {
         runner->flattenedCollisionEvents = nullptr;
     }
 
+    arrfree(runner->asyncSaveLoadQueue);
+    runner->asyncSaveLoadQueue = nullptr;
+
     arrfree(runner->cachedDrawables);
     runner->cachedDrawables = nullptr;
     arrfree(runner->instanceSnapshots);
@@ -4618,4 +4671,14 @@ void Runner_free(Runner* runner) {
     if (runner->windowTitle)
         free(runner->windowTitle);
     free(runner);
+}
+
+
+void Runner_queueVideoEvent(Runner* runner, const char* type)
+{
+    AsyncVideoEvent event = {
+        .type = safeStrdup(type)
+    };
+
+    arrput(runner->asyncVideoQueue, event);
 }

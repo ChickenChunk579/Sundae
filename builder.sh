@@ -13,7 +13,7 @@ CMAKE=cmake
 if command -v "$CMAKE" >/dev/null 2>&1; then
     echo found cmake
 else
-    echo "please install cmake.
+    echo "please install cmake."
     exit 1
 fi
 
@@ -24,13 +24,13 @@ NINJA=ninja
 if command -v "$NINJA" >/dev/null 2>&1; then
     echo found ninja
 else
-    echo "please install ninja.
+    echo "please install ninja."
     exit 1
 fi
 
 CMAKE_FLAGS="-B build/$1 -S . -GNinja -DCMAKE_EXPORT_COMPILE_COMMANDS=1 "
 if [[ $1 == "mac" ]]; then
-    CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=appkit" 
+    CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=appkit -DVIDEO_BACKEND=ffmpeg" 
 else
     echo unknown platform: $1
     exit 1

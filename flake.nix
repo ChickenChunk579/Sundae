@@ -36,6 +36,8 @@
               clang
               cmake
               ninja
+              pkg-config
+              ffmpeg
             ];
 
             shellHook = ''

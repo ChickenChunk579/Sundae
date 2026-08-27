@@ -90,6 +90,7 @@
 #define OTHER_OUTSIDE_VIEW6  46
 #define OTHER_OUTSIDE_VIEW7  47
 #define OTHER_ASYNC_DIALOG   63
+#define OTHER_ASYNC_SOCIAL   70
 #define OTHER_ASYNC_SAVE_LOAD 72
 #define OTHER_ASYNC_SYSTEM   75
 
@@ -440,6 +441,10 @@ typedef struct {
 typedef struct { char* key; int32_t value; } AssetsByNameEntry;
 typedef struct { char* key; int value; } DisabledObjEntry;
 
+typedef struct {
+    char* type;
+} AsyncVideoEvent;
+
 struct Runner {
     DataWin* dataWin;
     VMContext* vmContext;
@@ -604,6 +609,8 @@ struct Runner {
     AsyncSaveLoadCompletion* asyncSaveLoadQueue;  // stb_ds array of completions waiting to fire their event
     int32_t asyncBufferNextRequestId;             // monotonic request id handed out per kicked group/op
 
+    AsyncVideoEvent* asyncVideoQueue;
+
     // Pending Xbox One account-picker async result.
     int32_t xboxAccountPickerPendingId; // -1 when nothing is pending
     int32_t xboxAccountPickerPadIndex; // pad index reported back in the async map
@@ -698,6 +705,8 @@ void Runner_removeInstanceFromObjectLists(Runner* runner, Instance* inst);
 // Reset every per-object list to length 0 without releasing the backing arrays.
 void Runner_clearAllObjectLists(Runner* runner);
 
+
+
 // Update The Camera For Basic Views!
 void Runner_updateCameraViewSimple(GMLCamera* camera);
 
@@ -736,6 +745,7 @@ void Runner_addInstanceLayerElement(Runner* runner, int32_t layerId, int32_t ins
 void Runner_removeInstanceLayerElement(Runner* runner, int32_t instanceId);
 uint32_t Runner_getNextLayerId(Runner* runner);
 void Runner_freeRuntimeLayer(RuntimeLayer* runtimeLayer);
+void Runner_queueVideoEvent(Runner* runner, const char* type);
 // Sets the active state of the instance
 static inline void Runner_setActiveState(Runner* runner, Instance* instance, bool active) {
 #ifdef ENABLE_VM_TRACING

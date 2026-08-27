@@ -70,6 +70,7 @@ endif()
 set(PLATFORM "cli" CACHE STRING "Platform backend")
 set(BACKEND "" CACHE STRING "Desktop platform backend")
 set(AUDIO_BACKEND "" CACHE STRING "Audio backend")
+set(VIDEO_BACKEND "noop" CACHE STRING "Video backend")
 
 if(PLATFORM STREQUAL "cli" AND BACKEND STREQUAL "")
     message(FATAL_ERROR "You need to set a BACKEND!")
@@ -170,6 +171,7 @@ else()
 endif()
 
 target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(sundae PRIVATE ${CMAKE_SOURCE_DIR}/src/video)
 target_include_directories(sundae PRIVATE src/${PLATFORM})
 
 if(AUDIO_BACKEND STREQUAL "openal")
@@ -814,3 +816,30 @@ elseif(PLATFORM STREQUAL "vita")
 else()
     message(FATAL_ERROR "Unknown platform! ${PLATFORM}")
 endif()
+
+
+if (VIDEO_BACKEND STREQUAL "noop") 
+    file(GLOB VIDEO_SOURCES src/video/noop/*.c)
+    set(VIDEO_DEPS "")
+elseif (VIDEO_BACKEND STREQUAL "ffmpeg")
+    file(GLOB VIDEO_SOURCES src/video/ffmpeg/*.c)
+
+    find_package(PkgConfig REQUIRED)
+
+    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+        libavcodec
+        libavformat
+        libavutil
+        libswscale
+    )
+
+    set(VIDEO_DEPS "PkgConfig::FFMPEG")
+
+else()
+    message(FATAL_ERROR "Unknown video backend ${VIDEO_BACKEND}")
+endif()
+
+message("-- Video backend: ${VIDEO_BACKEND}")
+
+target_sources(sundae PRIVATE ${VIDEO_SOURCES})
+target_link_libraries(sundae PRIVATE ${VIDEO_DEPS})

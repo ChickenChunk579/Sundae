@@ -29,6 +29,7 @@
 #include "ini.h"
 #include "audio_system.h"
 #include "file_system.h"
+#include "video.h"
 #include "md5.h"
 #include "sha1.h"
 #include "base64.h"
@@ -18488,4 +18489,19 @@ void VMBuiltins_registerAll(VMContext* ctx) {
     VM_registerBuiltin(ctx, "texture_get_uvs", builtin_texture_get_uvs);
     VM_registerBuiltin(ctx, "texture_set_stage", builtin_texture_set_stage);
     VM_registerBuiltin(ctx, "sprite_get_info", builtin_sprite_get_info);
+
+    VM_registerBuiltin(ctx, "video_open", video_open);
+    VM_registerBuiltin(ctx, "video_close", video_close);
+    VM_registerBuiltin(ctx, "video_pause", video_pause);
+    VM_registerBuiltin(ctx, "video_resume", video_resume);
+    VM_registerBuiltin(ctx, "video_seek_to", video_seek_to);
+    VM_registerBuiltin(ctx, "video_draw", video_draw);
+    VM_registerBuiltin(ctx, "video_get_status", video_get_status);
+    VM_registerBuiltin(ctx, "video_get_format", video_get_format);
+    VM_registerBuiltin(ctx, "video_get_duration", video_get_duration);
+    VM_registerBuiltin(ctx, "video_get_position", video_get_position);
+    VM_registerBuiltin(ctx, "video_get_volume", video_get_volume);
+    VM_registerBuiltin(ctx, "video_set_volume", video_set_volume);
+    VM_registerBuiltin(ctx, "video_enable_loop", video_enable_loop);
+
 }
