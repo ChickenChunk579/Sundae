@@ -10,22 +10,22 @@ jobs:
     container:
       image: ps2dev/ps2dev:latest
     env:
-      CCACHE_IGNOREOPTIONS: "-DBUTTERSCOTCH_COMMIT_HASH=* -DBUTTERSCOTCH_COMMIT_DATE=*"
+      CCACHE_IGNOREOPTIONS: "-Dsundae_COMMIT_HASH=* -Dsundae_COMMIT_DATE=*"
     strategy:
       fail-fast: false
       matrix:
         include:
           - label: ""
-            artifact: butterscotch-ps2
+            artifact: sundae-ps2
             extra_flags: ""
           - label: " [WAD Version 14]"
-            artifact: butterscotch-ps2-wad14
+            artifact: sundae-ps2-wad14
             extra_flags: "-DENABLE_WAD14=ON -DENABLE_WAD16=OFF -DENABLE_WAD17=OFF"
           - label: " [WAD Version 16]"
-            artifact: butterscotch-ps2-wad16
+            artifact: sundae-ps2-wad16
             extra_flags: "-DENABLE_WAD14=OFF -DENABLE_WAD16=ON -DENABLE_WAD17=OFF"
           - label: " [WAD Version 17]"
-            artifact: butterscotch-ps2-wad17
+            artifact: sundae-ps2-wad17
             extra_flags: "-DENABLE_WAD14=OFF -DENABLE_WAD16=OFF -DENABLE_WAD17=ON"
     steps:
       - name: Install build tools
@@ -51,16 +51,16 @@ jobs:
         run: |
           mkdir -p build
           export CFLAGS="-fopt-info-inline-optimized=$PWD/build/inline_report.txt"
-          cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DWERROR=ON -DPLATFORM=ps2 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ matrix.extra_flags }} -DCMAKE_BUILD_TYPE=Release "-DBUTTERSCOTCH_COMMIT_HASH=${{ steps.commit-info.outputs.hash }}" "-DBUTTERSCOTCH_COMMIT_DATE=${{ steps.commit-info.outputs.date }}"
+          cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DWERROR=ON -DPLATFORM=ps2 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ matrix.extra_flags }} -DCMAKE_BUILD_TYPE=Release "-Dsundae_COMMIT_HASH=${{ steps.commit-info.outputs.hash }}" "-Dsundae_COMMIT_DATE=${{ steps.commit-info.outputs.date }}"
 
       - name: Build
         run: |
           cmake --build build
-          cp build/butterscotch build/butterscotch.elf
+          cp build/sundae build/sundae.elf
 
       - name: Check executeLoop I-Cache fit
         run: |
-          SYMBOL_LINES=$(mips64r5900el-ps2-elf-nm -S build/butterscotch.elf | grep -E ' executeLoop(\..*)?$' || true)
+          SYMBOL_LINES=$(mips64r5900el-ps2-elf-nm -S build/sundae.elf | grep -E ' executeLoop(\..*)?$' || true)
           if [ -z "$SYMBOL_LINES" ]; then
             echo "::error::Could not find executeLoop symbol in ELF (is it stripped?)"
             exit 1
@@ -94,12 +94,12 @@ jobs:
           INLINED=$(grep -E "Inlin(ed|ing) .* into executeLoop" "$REPORT" \
             | awk '{for(i=1;i<=NF;i++) if($i=="into" && $(i+1) ~ /^executeLoop/) {name=$(i-1); sub(/\/[0-9]+$/,"",name); print name}}' \
             | sort -u)
-          VARIANT_NAMES=$(mips64r5900el-ps2-elf-nm build/butterscotch.elf | awk '/ executeLoop(\..*)?$/ {print $3}')
+          VARIANT_NAMES=$(mips64r5900el-ps2-elf-nm build/sundae.elf | awk '/ executeLoop(\..*)?$/ {print $3}')
           DISASM_ARGS=""
           for NAME in $VARIANT_NAMES; do
             DISASM_ARGS="$DISASM_ARGS --disassemble=$NAME"
           done
-          NOT_INLINED=$(mips64r5900el-ps2-elf-objdump -d $DISASM_ARGS build/butterscotch.elf 2>/dev/null \
+          NOT_INLINED=$(mips64r5900el-ps2-elf-objdump -d $DISASM_ARGS build/sundae.elf 2>/dev/null \
             | grep -oE "jal[[:space:]]+[0-9a-f]+ <[^>]+>" \
             | sed -E 's/.*<([^>]+)>/\1/' \
             | sort -u)
@@ -130,7 +130,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
-          path: build/butterscotch.elf
+          path: build/sundae.elf
 
   build-ps3:
     name: Build (PS3)
@@ -155,13 +155,13 @@ jobs:
       - name: Build
         run: |
           cmake --build build
-          sprxlinker build/butterscotch.elf
+          sprxlinker build/sundae.elf
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: butterscotch-ps3
-          path: build/butterscotch.elf
+          name: sundae-ps3
+          path: build/sundae.elf
 
   build-vita:
     name: Build (PS Vita)
@@ -230,8 +230,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: butterscotch-vita
-          path: build/Butterscotch.vpk
+          name: sundae-vita
+          path: build/sundae.vpk
 
   build-switch:
     name: Build (Nintendo Switch)
@@ -269,5 +269,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: butterscotch-switch
-          path: build/butterscotch.nro
+          name: sundae-switch
+          path: build/sundae.nro

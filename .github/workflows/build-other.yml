@@ -13,12 +13,12 @@ jobs:
         include:
           - label: ""
             platform: web
-            artifact: butterscotch-web
-            output_glob: build/butterscotch.*
+            artifact: sundae-web
+            output_glob: build/sundae.*
           - label: " [Meta]"
             platform: web-meta
-            artifact: butterscotch-web-meta
-            output_glob: build/butterscotch-meta.*
+            artifact: sundae-web-meta
+            output_glob: build/sundae-meta.*
     steps:
       - uses: actions/checkout@v7
 
@@ -89,5 +89,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
-          name: butterscotch-android
+          name: sundae-android
           path: src/android/frontend/app/build/outputs/apk/debug/app-debug.apk

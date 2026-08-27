@@ -92,13 +92,13 @@ jobs:
       - name: Build
         run: |
           cmake --build build
-          llvm-strip --strip-all build/butterscotch.exe
+          llvm-strip --strip-all build/sundae.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: butterscotch-glfw3-windows-${{ matrix.arch }}
-          path: build/butterscotch.exe
+          name: sundae-glfw3-windows-${{ matrix.arch }}
+          path: build/sundae.exe
 
   build-windows:
     name: Build (${{ matrix.arch }})
@@ -141,10 +141,10 @@ jobs:
               BACKEND=${{ matrix.backend }} \
               EXTRALIBS='-latomic' \
               ${{ matrix.libs }}
-          llvm-strip --strip-all build/butterscotch.exe
+          llvm-strip --strip-all build/sundae.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: butterscotch-windows-${{ matrix.arch }}
-          path: build/butterscotch.exe
+          name: sundae-windows-${{ matrix.arch }}
+          path: build/sundae.exe

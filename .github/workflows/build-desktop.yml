@@ -161,7 +161,7 @@ jobs:
           cmake --build vendor/SDL2/build
           cmake --install vendor/SDL2/build
 
-      - name: Configure and build Butterscotch
+      - name: Configure and build sundae
         env:
           PKG_CONFIG_PATH: "${{ github.workspace }}/vendor/SDL2/install/${{ matrix.os_config.lib_dir_name }}/pkgconfig"
           PKG_CONFIG_LIBDIR: "${{ github.workspace }}/vendor/SDL2/install/${{ matrix.os_config.lib_dir_name }}/pkgconfig"
@@ -184,10 +184,10 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS="${{ matrix.arch_config.cflags }} -flto"
           cmake --build build
-          llvm-strip build/butterscotch
+          llvm-strip build/sundae
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: Butterscotch-${{ matrix.os_config.name }}-${{ matrix.arch_config.name }}
-          path: build/butterscotch${{ matrix.os_config.executable_suffix }}
+          name: sundae-${{ matrix.os_config.name }}-${{ matrix.arch_config.name }}
+          path: build/sundae${{ matrix.os_config.executable_suffix }}

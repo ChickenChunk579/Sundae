@@ -7,12 +7,12 @@ on:
     branches: [main]
 
 jobs:
-  butterscotch-linux-x86_64:
-    name: Butterscotch Tests (GLFW/Linux x86_64)
+  sundae-linux-x86_64:
+    name: sundae Tests (GLFW/Linux x86_64)
     runs-on: ubuntu-latest
     env:
       DOWNLOAD_COMMERCIAL_GAMES: ${{ secrets.COMMERCIAL_GAMES_URL != '' }}
-      CCACHE_IGNOREOPTIONS: "-DBUTTERSCOTCH_COMMIT_HASH=* -DBUTTERSCOTCH_COMMIT_DATE=*"
+      CCACHE_IGNOREOPTIONS: "-Dsundae_COMMIT_HASH=* -Dsundae_COMMIT_DATE=*"
     steps:
       - uses: actions/checkout@v7
 
@@ -31,9 +31,9 @@ jobs:
           key: ccache-tests-linux-x86_64
 
       - name: Configure
-        run: cmake -B build -G Ninja -DBACKEND=glfw3 -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_LAUNCHER=ccache "-DBUTTERSCOTCH_COMMIT_HASH=${{ steps.commit-info.outputs.hash }}" "-DBUTTERSCOTCH_COMMIT_DATE=${{ steps.commit-info.outputs.date }}"
+        run: cmake -B build -G Ninja -DBACKEND=glfw3 -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_LAUNCHER=ccache "-Dsundae_COMMIT_HASH=${{ steps.commit-info.outputs.hash }}" "-Dsundae_COMMIT_DATE=${{ steps.commit-info.outputs.date }}"
 
-      - name: Build Butterscotch
+      - name: Build sundae
         run: cmake --build build
 
       - name: Set up JDK 21
@@ -64,10 +64,10 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Run Butterscotch test suite
+      - name: Run sundae test suite
         working-directory: tests/Flowey
         run: |
-          xvfb-run -a ./gradlew --no-daemon run --args="--test-suite ${{ github.workspace }}/tests/tests.conf --butterscotch-path ${{ github.workspace }}/build/butterscotch --skip-commercial-games=${{ env.DOWNLOAD_COMMERCIAL_GAMES != 'true' }}"
+          xvfb-run -a ./gradlew --no-daemon run --args="--test-suite ${{ github.workspace }}/tests/tests.conf --sundae-path ${{ github.workspace }}/build/sundae --skip-commercial-games=${{ env.DOWNLOAD_COMMERCIAL_GAMES != 'true' }}"
 
       - name: Upload test screenshots
         if: always()          # the test step exits 1 on failure; run regardless
