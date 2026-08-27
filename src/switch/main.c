@@ -12,14 +12,6 @@
 #include <SDL3/SDL_main.h>
 #endif
 
-void platformSetFullscreen(bool newState) {
-    (void)newState;
-}
-
-bool platformGetFullscreen() {
-    return true;
-}
-
 int main(int argc, char* argv[]) {
     (void)argc;
     setbuf(stdout, NULL);
