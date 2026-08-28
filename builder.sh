@@ -57,10 +57,12 @@ $CMAKE $CMAKE_FLAGS
 if [[ $2 == "clean" ]]; then
     $CMAKE --build "build/$1" --target clean
     echo "done cleaning"
-elif [[ $2 == "build" || $2 == "run" ]]; then
+elif [[ $2 == "build" || $2 == "run" || $2 == "rungdb" ]]; then
     $CMAKE --build "build/$1"
     if [[ $2 == "run" ]]; then
         "./build/$1/sundae" "${@:3}"
+    elif [[ $2 == "rungdb" ]]; then
+        lldb "./build/$1/sundae"
     else
         echo "done building"
     fi

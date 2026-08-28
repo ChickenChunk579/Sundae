@@ -224,6 +224,10 @@ static void parseCommandLineArgs(CommandLineArgs* args, int argc, char* argv[]) 
     args->renderer = SOFTWARE;
 #endif
 
+#if defined(ENABLE_WGPU)
+    args->renderer = WGPU;
+#endif
+
     int opt;
     while ((opt = getopt_long(argc, argv, "", longOptions, nullptr)) != -1) {
         switch (opt) {

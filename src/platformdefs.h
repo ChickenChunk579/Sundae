@@ -41,7 +41,8 @@ static const OsTypeNameEntry OS_TYPE_NAMES[] = {
 enum GraphicsAPI {
     SOFTWARE,
     MODERN_GL,
-    LEGACY_GL
+    LEGACY_GL,
+    WGPU
 };
 
 extern enum GraphicsAPI gfx;
@@ -137,6 +138,11 @@ void platformSetWindowTitle(const char* title);
 void platformSleepUntil(uint64_t time);
 void platformSetFullscreen(bool newState);
 bool platformGetFullscreen();
+
+#ifdef ENABLE_WGPU
+#include <webgpu.h>
+WGPUSurface platformCreateWgpuSurface(WGPUInstance instance);
+#endif
 
 extern InputRecording *globalInputRecording;
 

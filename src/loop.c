@@ -61,6 +61,10 @@
 #include "profiler.h"
 #include "gettime.h"
 
+#ifdef ENABLE_WGPU
+#include "wgpu_renderer.h"
+#endif
+
 #ifdef PLATFORM_VITA
 #include "vita_textures.h"
 #endif
@@ -853,6 +857,11 @@ int loop(CommandLineArgs args, const char *argv0) {
         if (gfx == MODERN_GL) {
             renderer = GLRenderer_create();
             hostFramebuffer = &((GLRenderer *)renderer)->hostFramebuffer;
+        }
+#endif
+#ifdef ENABLE_WGPU
+        if (gfx == WGPU) {
+            renderer = WGPURender_create();
         }
 #endif
         if (!renderer) {

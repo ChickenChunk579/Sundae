@@ -2641,7 +2641,7 @@ void Runner_initFirstRoom(Runner* runner) {
     repeat(dataWin->glob.count, i) {
         int32_t codeId = dataWin->glob.codeIds[i];
         if (codeId >= 0 && dataWin->code.count > (uint32_t) codeId) {
-            logInfo("Runner: Executing global init script: %s\n", dataWin->code.entries[codeId].name);
+            //logInfo("Runner: Executing global init script: %s\n", dataWin->code.entries[codeId].name);
             RValue result = VM_executeCode(runner->vmContext, codeId);
             RValue_free(&result);
         }
@@ -2661,7 +2661,7 @@ void Runner_initFirstRoom(Runner* runner) {
             }
             int32_t codeId = dataWin->scpt.scripts[scriptIndex].codeId;
             if (codeId >= 0 && dataWin->code.count > (uint32_t) codeId) {
-                logInfo("Runner: Executing extension init script: %s\n", initScript);
+                //logInfo("Runner: Executing extension init script: %s\n", initScript);
                 RValue result = VM_executeCode(runner->vmContext, codeId);
                 RValue_free(&result);
             }

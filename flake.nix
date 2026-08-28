@@ -42,6 +42,7 @@
               sdl3
               SDL2
               SDL
+              cargo
             ];
 
             shellHook = ''

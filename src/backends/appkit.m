@@ -343,11 +343,43 @@ bool platformGetFullscreen() {
     return (window.styleMask & NSWindowStyleMaskFullScreen) != 0;
 }
 
+#ifdef ENABLE_WGPU
+#include <webgpu.h>
+#import <QuartzCore/CAMetalLayer.h>
+
+WGPUSurface platformCreateWgpuSurface(WGPUInstance instance) {
+    NSView *contentView = [window contentView];
+
+    [contentView setWantsLayer:YES];
+
+    CAMetalLayer *metalLayer = [CAMetalLayer layer];
+    [contentView setLayer:metalLayer];
+
+    metalLayer.contentsScale = [window backingScaleFactor];
+
+    WGPUSurfaceSourceMetalLayer metalSource = {
+        .chain = {
+            .sType = WGPUSType_SurfaceSourceMetalLayer,
+            .next = NULL
+        },
+        .layer = (__bridge void *)metalLayer
+    };
+
+    WGPUSurfaceDescriptor descriptor = {
+        .nextInChain = (const WGPUChainedStruct *)&metalSource,
+    };
+
+    WGPUSurface surface = wgpuInstanceCreateSurface(instance, &descriptor);
+
+    return surface;
+}
+#endif
+
 void platformSetFullscreen(bool newState) {
     bool isCurrentlyFullScreen = platformGetFullscreen();
 
     if (newState != isCurrentlyFullScreen) {
-        [window toggleFullScreen:nil];
+        //[window toggleFullScreen:nil];
     }
 }
 
