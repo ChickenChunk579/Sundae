@@ -4,10 +4,12 @@
 #include "runner.h"
 
 #include <webgpu.h>
+#include "wgpu_batch.h"
+#include <stddef.h>
 
 #define MAX_TEXTURES 64
 
-typedef struct {
+struct WGPURender {
     Renderer base;
 
     WGPUInstance instance;
@@ -25,6 +27,15 @@ typedef struct {
     int32_t* textureHeights;
     WGPUTextureView* wgpuTextureViews;
     WGPUTexture* wgpuTextures;
-} WGPURender;
+
+    WGPUShaderModule batchShader;
+    WGPUTextureView batchTextureView;
+    WGPUBindGroup batchBindGroup;
+    WGPURenderPipeline batchPipeline;
+    WGPUBuffer batchUniforms;
+
+    WGPUSprite batchSprites[MAX_SPRITES];
+    size_t batchSpriteCount;
+};
 
 Renderer* WGPURender_create(void);

@@ -3,10 +3,33 @@
 #include "platformdefs.h"
 #include "renderer.h"
 #include "image_decoder.h"
+#include "wgpu_batch.h"
+#include <time.h>
 #include <webgpu.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 static RendererVtable wgpuVtable;
+
+void onWGPUError(
+    WGPUDevice const* device,
+    WGPUErrorType type,
+    WGPUStringView message,
+    void* userdata1,
+    void* userdata2
+) {
+    (void)device;
+    (void)userdata1;
+    (void)userdata2;
+
+    fprintf(
+        stderr,
+        "WGPU ERROR type=%d: %.*s\n",
+        (int)type,
+        (int)message.length,
+        message.data
+    );
+}
 
 void onAdapterRequestEnded(
     WGPURequestAdapterStatus status,
@@ -182,7 +205,10 @@ void WGPURender_init(Renderer* renderer, DataWin* dataWin) {
 	deviceDesc.requiredLimits = nullptr;
 	deviceDesc.defaultQueue.nextInChain = nullptr;
     deviceDesc.nextInChain = nullptr;
-
+    deviceDesc.uncapturedErrorCallbackInfo.nextInChain = nullptr;
+    deviceDesc.uncapturedErrorCallbackInfo.callback = onWGPUError;
+    deviceDesc.uncapturedErrorCallbackInfo.userdata1 = NULL;
+    deviceDesc.uncapturedErrorCallbackInfo.userdata2 = NULL;
     requestEnded = false;
 
     WGPURequestDeviceCallbackInfo deviceCallbackInfo = {};
@@ -233,7 +259,6 @@ void WGPURender_init(Renderer* renderer, DataWin* dataWin) {
     wgpuSurfaceConfigure(self->surface, &config);
 
 
-    bool res = WGPURender_ensureTextureLoaded(renderer, 0);
 }
 
 void WGPURender_destroy(Renderer* renderer) {
@@ -249,7 +274,10 @@ void WGPURender_destroy(Renderer* renderer) {
 WGPUTextureView WGPURender_getNextSurfaceTextureView(WGPURender* self) {
 	WGPUSurfaceTexture surfaceTexture;
 	wgpuSurfaceGetCurrentTexture(self->surface, &surfaceTexture);
-	if (surfaceTexture.status != WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal) {
+	if (
+        surfaceTexture.status != WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal &&
+        surfaceTexture.status != WGPUSurfaceGetCurrentTextureStatus_SuccessSuboptimal
+    ) {
 		return nullptr;
 	}
 
@@ -285,7 +313,16 @@ void WGPURender_beginFrame(Renderer* renderer, int32_t gameW, int32_t gameH, int
 	renderPassColorAttachment.resolveTarget = nullptr;
 	renderPassColorAttachment.loadOp = WGPULoadOp_Clear;
 	renderPassColorAttachment.storeOp = WGPUStoreOp_Store;
-	renderPassColorAttachment.clearValue = (WGPUColor){ 0.9, 0.1, 0.2, 1.0 };
+    static float t = 0.0f;
+    t += 0.01f;
+
+    renderPassColorAttachment.clearValue =
+        (WGPUColor){
+            (sin(t) + 1.0) * 0.5,
+            0.0,
+            0.0,
+            1.0
+        };
     renderPassColorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 
 	renderPassDesc.colorAttachmentCount = 1;
@@ -294,6 +331,43 @@ void WGPURender_beginFrame(Renderer* renderer, int32_t gameW, int32_t gameH, int
 	renderPassDesc.timestampWrites = nullptr;
 
     self->renderPass = wgpuCommandEncoderBeginRenderPass(self->encoder, &renderPassDesc);
+    
+    static int frames = 0;
+    static time_t last = 0;
+
+    time_t now = time(NULL);
+
+    frames++;
+
+    if (now != last) {
+        printf("FPS: %d\n", frames);
+        frames = 0;
+        last = now;
+    }
+
+    WGPURender_batchBegin(self);
+
+    for (int i = 0; i < 100; i++) {
+        float x = (float)(rand() % 640);
+        float y = (float)(rand() % 480);
+
+        float w = 25.0f + (float)(rand() % 76);
+        float h = 25.0f + (float)(rand() % 76);
+
+        float r = (float)rand() / (float)RAND_MAX;
+        float g = (float)rand() / (float)RAND_MAX;
+        float b = (float)rand() / (float)RAND_MAX;
+        float a = 1.0f;
+
+        WGPURender_batchDraw(
+            self,
+            x, y,
+            w, h,
+            r, g, b, a
+        );
+    }
+
+    WGPURender_batchEnd(self);
 }
 
 WGPUBool wgpuDevicePoll(WGPUDevice device, WGPUBool wait, WGPU_NULLABLE void const * submissionIndex);
@@ -1059,6 +1133,8 @@ Renderer* WGPURender_create(void) {
     wgpu->textureLoaded = (bool*)safeCalloc(MAX_TEXTURES, sizeof(bool));
     wgpu->textureWidths = (int32_t*)safeCalloc(MAX_TEXTURES, sizeof(int32_t));
     wgpu->textureHeights = (int32_t*)safeCalloc(MAX_TEXTURES, sizeof(int32_t));
+
+    wgpu->batchSpriteCount = 0;
 
     return (Renderer*)wgpu;
 }
