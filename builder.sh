@@ -13,7 +13,7 @@ mkdir -p .vscode
 cat << EOF > .vscode/settings.json
 {
     "clangd.arguments": [
-        "--compile-commands-dir=\${workspaceFolder}/$1"
+        "--compile-commands-dir=\${workspaceFolder}/build/$1"
     ]
 }
 EOF
