@@ -24,51 +24,52 @@
 #endif
 
 #if defined(__cplusplus) && __cplusplus >= 201703L
-    #define MAYBE_UNUSED [[maybe_unused]]
+#define MAYBE_UNUSED [[maybe_unused]]
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
-    #define MAYBE_UNUSED [[maybe_unused]]
+#define MAYBE_UNUSED [[maybe_unused]]
 #elif defined(__GNUC__) || defined(__clang__)
-    #define MAYBE_UNUSED __attribute__((unused))
+#define MAYBE_UNUSED __attribute__((unused))
 #else
-    #define MAYBE_UNUSED
+#define MAYBE_UNUSED
 #endif
 
-#if (defined(__GNUC__) && (__GNUC__ >= 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 8))) || defined(__clang__) || defined(__TINYC__)
-    #define BS_ALIGN(x) __attribute__((aligned(x)))
+#if (defined(__GNUC__) && (__GNUC__ >= 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 8))) || \
+	defined(__clang__) || defined(__TINYC__)
+#define BS_ALIGN(x) __attribute__((aligned(x)))
 #else
-    #define BS_ALIGN(x)
+#define BS_ALIGN(x)
 #endif
 
 #if defined(__GNUC__) || defined(__clang__) || defined(__TINYC__)
-    #define NOINLINE __attribute__((noinline))
-#elif defined(_MSC_VER) && _MSC_VER >= 1400 // VS2005 or later
-    #define NOINLINE __declspec(noinline)
+#define NOINLINE __attribute__((noinline))
+#elif defined(_MSC_VER) && _MSC_VER >= 1400	 // VS2005 or later
+#define NOINLINE __declspec(noinline)
 #else
-    #define NOINLINE
+#define NOINLINE
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-    #if defined(__x86_64__) || defined(__i386__)
-        #define YIELD() __asm__ volatile("rep; nop" : : : "memory")
-    #elif defined(__aarch64__) || (defined(__arm__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7))
-        #define YIELD() __asm__ volatile("yield" : : : "memory")
-    #elif defined(__riscv)
-        #define YIELD() __asm__ volatile(".insn i 0x0F, 0, x0, x0, 1" : : : "memory")
-    #else
-        #define YIELD() ((void)0)
-    #endif
-#elif defined(_MSC_VER)
-    #if (defined(_M_X64) || defined(_M_IX86)) && _MSC_VER >= 1400
-        #include <intrin.h>
-        #define YIELD() _mm_pause()
-    #elif defined(_M_ARM64) || defined(_M_ARM)
-        #include <intrin.h>
-        #define YIELD() __yield()
-    #else
-        #define YIELD() ((void)0)
-    #endif
+#if defined(__x86_64__) || defined(__i386__)
+#define YIELD() __asm__ volatile("rep; nop" : : : "memory")
+#elif defined(__aarch64__) || (defined(__arm__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7))
+#define YIELD() __asm__ volatile("yield" : : : "memory")
+#elif defined(__riscv)
+#define YIELD() __asm__ volatile(".insn i 0x0F, 0, x0, x0, 1" : : : "memory")
 #else
-    #define YIELD() ((void)0)
+#define YIELD() ((void)0)
+#endif
+#elif defined(_MSC_VER)
+#if (defined(_M_X64) || defined(_M_IX86)) && _MSC_VER >= 1400
+#include <intrin.h>
+#define YIELD() _mm_pause()
+#elif defined(_M_ARM64) || defined(_M_ARM)
+#include <intrin.h>
+#define YIELD() __yield()
+#else
+#define YIELD() ((void)0)
+#endif
+#else
+#define YIELD() ((void)0)
 #endif
 
 #ifdef _MSC_VER

@@ -1,56 +1,56 @@
 #ifndef _BS_RUNNER_GAMEPAD_H_
 #define _BS_RUNNER_GAMEPAD_H_
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #define MAX_GAMEPADS 16
 
 #define GP_BUTTON_COUNT 17
 #define GP_AXIS_COUNT 4
 
-#define GP_FACE1      32769
-#define GP_FACE2      32770
-#define GP_FACE3      32771
-#define GP_FACE4      32772
-#define GP_SHOULDERL  32773
-#define GP_SHOULDERR  32774
+#define GP_FACE1 32769
+#define GP_FACE2 32770
+#define GP_FACE3 32771
+#define GP_FACE4 32772
+#define GP_SHOULDERL 32773
+#define GP_SHOULDERR 32774
 #define GP_SHOULDERLB 32775
 #define GP_SHOULDERRB 32776
-#define GP_SELECT     32777
-#define GP_START      32778
-#define GP_STICKL     32779
-#define GP_STICKR     32780
-#define GP_PADU       32781
-#define GP_PADD       32782
-#define GP_PADL       32783
-#define GP_PADR       32784
-#define GP_HOME       32799
+#define GP_SELECT 32777
+#define GP_START 32778
+#define GP_STICKL 32779
+#define GP_STICKR 32780
+#define GP_PADU 32781
+#define GP_PADD 32782
+#define GP_PADL 32783
+#define GP_PADR 32784
+#define GP_HOME 32799
 
-#define GP_AXIS_LH    32785
-#define GP_AXIS_LV    32786
-#define GP_AXIS_RH    32787
-#define GP_AXIS_RV    32788
+#define GP_AXIS_LH 32785
+#define GP_AXIS_LV 32786
+#define GP_AXIS_RH 32787
+#define GP_AXIS_RV 32788
 
 typedef struct {
-    bool connectedPrev;
-    bool connected;
-    int jid;
-    char description[256];
-    char guid[64];
-    bool buttonDownPrev[GP_BUTTON_COUNT];
-    bool buttonDown[GP_BUTTON_COUNT];
-    bool buttonPressed[GP_BUTTON_COUNT];
-    bool buttonReleased[GP_BUTTON_COUNT];
-    float buttonValue[GP_BUTTON_COUNT];
-    float axisValue[GP_AXIS_COUNT];
-    float deadzone;
-    float triggerThreshold;
+	bool connectedPrev;
+	bool connected;
+	int jid;
+	char description[256];
+	char guid[64];
+	bool buttonDownPrev[GP_BUTTON_COUNT];
+	bool buttonDown[GP_BUTTON_COUNT];
+	bool buttonPressed[GP_BUTTON_COUNT];
+	bool buttonReleased[GP_BUTTON_COUNT];
+	float buttonValue[GP_BUTTON_COUNT];
+	float axisValue[GP_AXIS_COUNT];
+	float deadzone;
+	float triggerThreshold;
 } GamepadSlot;
 
 typedef struct {
-    GamepadSlot slots[MAX_GAMEPADS];
-    int connectedCount;
+	GamepadSlot slots[MAX_GAMEPADS];
+	int connectedCount;
 } RunnerGamepadState;
 
 RunnerGamepadState* RunnerGamepad_create(void);

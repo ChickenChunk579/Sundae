@@ -1,6 +1,8 @@
 #include "wgpu_batch.h"
-#include "wgpu_renderer.h"
+
 #include <webgpu.h>
+
+#include "wgpu_renderer.h"
 
 const char* shaderCode = R"(
 struct Sprite {
@@ -71,168 +73,142 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f {
 )";
 
 void WGPURender_batchBegin(WGPURender* self) {
-    if (self->batchPipeline) {
-        self->batchSpriteCount = 0;
-        return;
-    }
+	if (self->batchPipeline) {
+		self->batchSpriteCount = 0;
+		return;
+	}
 
-    WGPUShaderModuleDescriptor shaderDesc = {};
+	WGPUShaderModuleDescriptor shaderDesc = {};
 
-    WGPUShaderSourceWGSL shaderCodeDesc = {};
-    shaderCodeDesc.chain.next = nullptr;
-    shaderCodeDesc.chain.sType = WGPUSType_ShaderSourceWGSL;
-    shaderCodeDesc.code = (WGPUStringView){ .data = shaderCode, .length = strlen(shaderCode) };
+	WGPUShaderSourceWGSL shaderCodeDesc = {};
+	shaderCodeDesc.chain.next = nullptr;
+	shaderCodeDesc.chain.sType = WGPUSType_ShaderSourceWGSL;
+	shaderCodeDesc.code = (WGPUStringView){.data = shaderCode, .length = strlen(shaderCode)};
 
-    shaderDesc.nextInChain = &shaderCodeDesc.chain;
-    self->batchShader = wgpuDeviceCreateShaderModule(self->device, &shaderDesc);
+	shaderDesc.nextInChain = &shaderCodeDesc.chain;
+	self->batchShader = wgpuDeviceCreateShaderModule(self->device, &shaderDesc);
 
+	self->batchSpriteCount = 0;
 
-    self->batchSpriteCount = 0;
+	WGPUBufferDescriptor bufferDesc = {};
+	bufferDesc.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
+	bufferDesc.size = sizeof(WGPUUniforms);
+	bufferDesc.mappedAtCreation = false;
 
-    WGPUBufferDescriptor bufferDesc = {};
-    bufferDesc.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
-    bufferDesc.size = sizeof(WGPUUniforms);
-    bufferDesc.mappedAtCreation = false;
+	self->batchUniforms = wgpuDeviceCreateBuffer(self->device, &bufferDesc);
 
-    self->batchUniforms = wgpuDeviceCreateBuffer(self->device, &bufferDesc);
+	WGPUBindGroupLayoutEntry layoutEntry = {};
+	layoutEntry.binding = 0;
+	layoutEntry.visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment;
+	layoutEntry.buffer.type = WGPUBufferBindingType_Uniform;
+	layoutEntry.buffer.hasDynamicOffset = false;
+	layoutEntry.buffer.minBindingSize = sizeof(WGPUUniforms);
 
-    WGPUBindGroupLayoutEntry layoutEntry = {};
-    layoutEntry.binding = 0;
-    layoutEntry.visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment;
-    layoutEntry.buffer.type = WGPUBufferBindingType_Uniform;
-    layoutEntry.buffer.hasDynamicOffset = false;
-    layoutEntry.buffer.minBindingSize = sizeof(WGPUUniforms);
+	WGPUBindGroupLayoutDescriptor layoutDesc = {};
+	layoutDesc.entryCount = 1;
+	layoutDesc.entries = &layoutEntry;
 
-    WGPUBindGroupLayoutDescriptor layoutDesc = {};
-    layoutDesc.entryCount = 1;
-    layoutDesc.entries = &layoutEntry;
+	WGPUBindGroupLayout bindGroupLayout =
+		wgpuDeviceCreateBindGroupLayout(self->device, &layoutDesc);
 
-    WGPUBindGroupLayout bindGroupLayout = wgpuDeviceCreateBindGroupLayout(self->device, &layoutDesc);
+	WGPURenderPipelineDescriptor pipelineDesc = {};
 
+	pipelineDesc.vertex.bufferCount = 0;
+	pipelineDesc.vertex.buffers = NULL;
 
-    WGPURenderPipelineDescriptor pipelineDesc = {};
+	pipelineDesc.vertex.module = self->batchShader;
+	pipelineDesc.vertex.entryPoint = (WGPUStringView){.data = "vs_main", .length = 7};
+	pipelineDesc.vertex.constantCount = 0;
+	pipelineDesc.vertex.constants = NULL;
 
-    pipelineDesc.vertex.bufferCount = 0;
-    pipelineDesc.vertex.buffers = NULL;
+	pipelineDesc.primitive.topology = WGPUPrimitiveTopology_TriangleList;
+	pipelineDesc.primitive.stripIndexFormat = WGPUIndexFormat_Undefined;
+	pipelineDesc.primitive.frontFace = WGPUFrontFace_CCW;
+	pipelineDesc.primitive.cullMode = WGPUCullMode_None;
 
-    pipelineDesc.vertex.module = self->batchShader;
-    pipelineDesc.vertex.entryPoint = (WGPUStringView){ .data = "vs_main", .length = 7 };
-    pipelineDesc.vertex.constantCount = 0;
-    pipelineDesc.vertex.constants = NULL;
+	WGPUFragmentState fragmentState = {};
+	fragmentState.module = self->batchShader;
+	fragmentState.entryPoint = (WGPUStringView){.data = "fs_main", .length = 7};
+	fragmentState.constantCount = 0;
+	fragmentState.constants = NULL;
 
-    pipelineDesc.primitive.topology = WGPUPrimitiveTopology_TriangleList;
-    pipelineDesc.primitive.stripIndexFormat = WGPUIndexFormat_Undefined;
-    pipelineDesc.primitive.frontFace = WGPUFrontFace_CCW;
-    pipelineDesc.primitive.cullMode = WGPUCullMode_None;
+	WGPUBlendState blendState = {};
+	blendState.color.srcFactor = WGPUBlendFactor_SrcAlpha;
+	blendState.color.dstFactor = WGPUBlendFactor_OneMinusSrcAlpha;
+	blendState.color.operation = WGPUBlendOperation_Add;
+	blendState.alpha.srcFactor = WGPUBlendFactor_Zero;
+	blendState.alpha.dstFactor = WGPUBlendFactor_One;
+	blendState.alpha.operation = WGPUBlendOperation_Add;
 
-    WGPUFragmentState fragmentState = {};
-    fragmentState.module = self->batchShader;
-    fragmentState.entryPoint = (WGPUStringView){ .data = "fs_main", .length = 7 };
-    fragmentState.constantCount = 0;
-    fragmentState.constants = NULL;
-    
-    WGPUBlendState blendState = {};
-    blendState.color.srcFactor = WGPUBlendFactor_SrcAlpha;
-    blendState.color.dstFactor = WGPUBlendFactor_OneMinusSrcAlpha;
-    blendState.color.operation = WGPUBlendOperation_Add;
-    blendState.alpha.srcFactor = WGPUBlendFactor_Zero;
-    blendState.alpha.dstFactor = WGPUBlendFactor_One;
-    blendState.alpha.operation = WGPUBlendOperation_Add;
+	WGPUColorTargetState colorTarget = {};
+	colorTarget.format = WGPUTextureFormat_BGRA8Unorm;
+	colorTarget.blend = &blendState;
+	colorTarget.writeMask = WGPUColorWriteMask_All;
 
-    WGPUColorTargetState colorTarget = {};
-    colorTarget.format = WGPUTextureFormat_BGRA8Unorm;
-    colorTarget.blend = &blendState;
-    colorTarget.writeMask = WGPUColorWriteMask_All;
-    
-    fragmentState.targetCount = 1;
-    fragmentState.targets = &colorTarget;
-    pipelineDesc.fragment = &fragmentState;
+	fragmentState.targetCount = 1;
+	fragmentState.targets = &colorTarget;
+	pipelineDesc.fragment = &fragmentState;
 
-    pipelineDesc.depthStencil = NULL;
+	pipelineDesc.depthStencil = NULL;
 
-    
 	pipelineDesc.multisample.count = 1;
-    pipelineDesc.multisample.mask = ~0u;
-    pipelineDesc.multisample.alphaToCoverageEnabled = false;
-    
-    WGPUPipelineLayoutDescriptor pipelineLayoutDesc = {};
-    pipelineLayoutDesc.bindGroupLayoutCount = 1;
-    pipelineLayoutDesc.bindGroupLayouts = &bindGroupLayout;
-    
-    WGPUPipelineLayout pipelineLayout = wgpuDeviceCreatePipelineLayout(self->device, &pipelineLayoutDesc);
+	pipelineDesc.multisample.mask = ~0u;
+	pipelineDesc.multisample.alphaToCoverageEnabled = false;
 
-    pipelineDesc.layout = pipelineLayout;
+	WGPUPipelineLayoutDescriptor pipelineLayoutDesc = {};
+	pipelineLayoutDesc.bindGroupLayoutCount = 1;
+	pipelineLayoutDesc.bindGroupLayouts = &bindGroupLayout;
 
-    WGPUBindGroupEntry bindEntry = {};
-    bindEntry.binding = 0;
-    bindEntry.buffer = self->batchUniforms;
-    bindEntry.offset = 0;
-    bindEntry.size = sizeof(WGPUUniforms);
+	WGPUPipelineLayout pipelineLayout =
+		wgpuDeviceCreatePipelineLayout(self->device, &pipelineLayoutDesc);
 
-    WGPUBindGroupDescriptor bindGroupDesc = {};
-    bindGroupDesc.layout = bindGroupLayout;
-    bindGroupDesc.entryCount = 1;
-    bindGroupDesc.entries = &bindEntry;
+	pipelineDesc.layout = pipelineLayout;
 
-    self->batchBindGroup = wgpuDeviceCreateBindGroup(self->device, &bindGroupDesc);
+	WGPUBindGroupEntry bindEntry = {};
+	bindEntry.binding = 0;
+	bindEntry.buffer = self->batchUniforms;
+	bindEntry.offset = 0;
+	bindEntry.size = sizeof(WGPUUniforms);
 
-    self->batchPipeline = wgpuDeviceCreateRenderPipeline(
-        self->device,
-        &pipelineDesc
-    );
+	WGPUBindGroupDescriptor bindGroupDesc = {};
+	bindGroupDesc.layout = bindGroupLayout;
+	bindGroupDesc.entryCount = 1;
+	bindGroupDesc.entries = &bindEntry;
 
-    wgpuShaderModuleRelease(self->batchShader);
+	self->batchBindGroup = wgpuDeviceCreateBindGroup(self->device, &bindGroupDesc);
+
+	self->batchPipeline = wgpuDeviceCreateRenderPipeline(self->device, &pipelineDesc);
+
+	wgpuShaderModuleRelease(self->batchShader);
 }
 
-void WGPURender_batchDraw(
-    WGPURender* self,
-    float x,
-    float y,
-    float w,
-    float h,
-    float r,
-    float g,
-    float b,
-    float a
-) {
-    self->batchSprites[self->batchSpriteCount].position.x = x;
-    self->batchSprites[self->batchSpriteCount].position.y = y;
-    self->batchSprites[self->batchSpriteCount].size.x = w;
-    self->batchSprites[self->batchSpriteCount].size.y = h;
+void WGPURender_batchDraw(WGPURender* self, float x, float y, float w, float h, float r, float g,
+						  float b, float a) {
+	self->batchSprites[self->batchSpriteCount].position.x = x;
+	self->batchSprites[self->batchSpriteCount].position.y = y;
+	self->batchSprites[self->batchSpriteCount].size.x = w;
+	self->batchSprites[self->batchSpriteCount].size.y = h;
 
-    self->batchSprites[self->batchSpriteCount].color.r = r;
-    self->batchSprites[self->batchSpriteCount].color.g = g;
-    self->batchSprites[self->batchSpriteCount].color.b = b;
-    self->batchSprites[self->batchSpriteCount].color.a = a;
-    self->batchSpriteCount++;
+	self->batchSprites[self->batchSpriteCount].color.r = r;
+	self->batchSprites[self->batchSpriteCount].color.g = g;
+	self->batchSprites[self->batchSpriteCount].color.b = b;
+	self->batchSprites[self->batchSpriteCount].color.a = a;
+	self->batchSpriteCount++;
 }
 
 void WGPURender_batchEnd(WGPURender* self) {
-    WGPUUniforms uniforms = {};
-    memcpy(uniforms.sprites,
-        self->batchSprites,
-        sizeof(self->batchSprites[0]) * self->batchSpriteCount);
+	WGPUUniforms uniforms = {};
+	memcpy(uniforms.sprites, self->batchSprites,
+		   sizeof(self->batchSprites[0]) * self->batchSpriteCount);
 
-    uniforms.count = self->batchSpriteCount;
+	uniforms.count = self->batchSpriteCount;
 
-    uniforms.width = 640;
-    uniforms.height = 480;
+	uniforms.width = 640;
+	uniforms.height = 480;
 
-    wgpuQueueWriteBuffer(
-        self->queue,
-        self->batchUniforms,
-        0,
-        &uniforms,
-        sizeof(uniforms)
-    );
+	wgpuQueueWriteBuffer(self->queue, self->batchUniforms, 0, &uniforms, sizeof(uniforms));
 
-    wgpuRenderPassEncoderSetPipeline(self->renderPass, self->batchPipeline);
-    wgpuRenderPassEncoderSetBindGroup(self->renderPass, 0, self->batchBindGroup, 0, NULL);
-    wgpuRenderPassEncoderDraw(
-        self->renderPass,
-        6 * self->batchSpriteCount,
-        1,
-        0,
-        0
-    );
+	wgpuRenderPassEncoderSetPipeline(self->renderPass, self->batchPipeline);
+	wgpuRenderPassEncoderSetBindGroup(self->renderPass, 0, self->batchBindGroup, 0, NULL);
+	wgpuRenderPassEncoderDraw(self->renderPass, 6 * self->batchSpriteCount, 1, 0, 0);
 }

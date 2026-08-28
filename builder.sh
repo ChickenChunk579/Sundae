@@ -8,6 +8,16 @@ if [ "$#" -lt 2 ]; then
 fi
 
 
+echo configuring ide...
+mkdir -p .vscode
+cat << EOF > .vscode/settings.json
+{
+    "clangd.arguments": [
+        "--compile-commands-dir=\${workspaceFolder}/$1"
+    ]
+}
+EOF
+
 CMAKE=cmake
 
 # test for cmake
@@ -28,6 +38,27 @@ else
     echo "please install ninja."
     exit 1
 fi
+
+if command -v clang-format >/dev/null 2>&1; then
+    echo found clang-format
+else
+    echo "please install clang-format."
+    exit 1
+fi
+
+CACHE_FILE=".src-format.cache"
+
+NEWEST_MOD=$(find src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cxx" \) -exec stat -c "%Y" {} + 2>/dev/null | sort -n | tail -n 1 || echo 0)
+
+LAST_MOD=0
+[ -f "$CACHE_FILE" ] && LAST_MOD=$(cat "$CACHE_FILE")
+
+if [ "$NEWEST_MOD" -gt "$LAST_MOD" ]; then
+    echo "formatting..."
+    find src \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cxx" \) -exec clang-format -i {} +
+    echo "$NEWEST_MOD" > "$CACHE_FILE"
+fi
+
 
 CMAKE_FLAGS="-B build/$1 -S . -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=1 "
 if [[ $1 == "mac-appkit" ]]; then

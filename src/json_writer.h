@@ -1,16 +1,17 @@
 #ifndef _BS_JSON_WRITER_H_
 #define _BS_JSON_WRITER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "common.h"
 #include "string_builder.h"
-#include <stdint.h>
-#include <stddef.h>
 
 // ===[ JsonWriter Type ]===
 
 typedef struct {
-    StringBuilder out;
-    bool needsComma;
+	StringBuilder out;
+	bool needsComma;
 } JsonWriter;
 
 // ===[ Lifecycle ]===
@@ -35,7 +36,8 @@ void JsonWriter_string(JsonWriter* writer, const char* value);
 void JsonWriter_int(JsonWriter* writer, int64_t value);
 void JsonWriter_double(JsonWriter* writer, double value);
 // Writes an already-formatted JSON value verbatim, with no quoting or escaping.
-// The caller is responsible for it being a valid, self-contained JSON value (example: a number literal, escaped and quoted string value, "true"/"false"/"null", or a complete object/array).
+// The caller is responsible for it being a valid, self-contained JSON value (example: a number
+// literal, escaped and quoted string value, "true"/"false"/"null", or a complete object/array).
 void JsonWriter_rawValue(JsonWriter* writer, const char* formattedValue);
 void JsonWriter_bool(JsonWriter* writer, bool value);
 void JsonWriter_null(JsonWriter* writer);

@@ -10,33 +10,33 @@
 #endif
 
 int main(int argc, char* argv[]) {
-    (void)argc;
-    setbuf(stderr, NULL);
+	(void)argc;
+	setbuf(stderr, NULL);
 
-    CommandLineArgs args = {0};
+	CommandLineArgs args = {0};
 
-    args.exitAtFrame = -1;
+	args.exitAtFrame = -1;
 #ifdef ENABLE_VM_TRACING
-    args.traceBytecodeAfterFrame = 0;
+	args.traceBytecodeAfterFrame = 0;
 #endif
-    args.speedMultiplier = 1.0;
-    args.fastForwardSpeed = 0.0;
-    args.osType = OS_WINDOWS;
-    args.profilerFramesBetween = 0;
-    args.loadType = DATAWINLOADTYPE_LOAD_PER_CHUNK;
-    args.lazyRooms = true;
-    args.lazyTextures = true;
-    args.lazyAudio = true;
+	args.speedMultiplier = 1.0;
+	args.fastForwardSpeed = 0.0;
+	args.osType = OS_WINDOWS;
+	args.profilerFramesBetween = 0;
+	args.loadType = DATAWINLOADTYPE_LOAD_PER_CHUNK;
+	args.lazyRooms = true;
+	args.lazyTextures = true;
+	args.lazyAudio = true;
 #if defined(ENABLE_MODERN_GL)
-    args.renderer = MODERN_GL;
+	args.renderer = MODERN_GL;
 #elif defined(ENABLE_LEGACY_GL)
-    args.renderer = LEGACY_GL;
+	args.renderer = LEGACY_GL;
 #else
-    args.renderer = SOFTWARE;
+	args.renderer = SOFTWARE;
 #endif
-    args.dataWinPath = DATA_WIN_PATH;
+	args.dataWinPath = DATA_WIN_PATH;
 
-    int ret = loop(args, argv[0]);
-    freeCommandLineArgs(&args);
-    return ret;
+	int ret = loop(args, argv[0]);
+	freeCommandLineArgs(&args);
+	return ret;
 }

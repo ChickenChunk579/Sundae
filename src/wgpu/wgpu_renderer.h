@@ -1,41 +1,41 @@
 #pragma once
+#include <stddef.h>
+#include <webgpu.h>
+
 #include "common.h"
 #include "renderer.h"
 #include "runner.h"
-
-#include <webgpu.h>
 #include "wgpu_batch.h"
-#include <stddef.h>
 
 #define MAX_TEXTURES 64
 
 struct WGPURender {
-    Renderer base;
+	Renderer base;
 
-    WGPUInstance instance;
-    WGPUAdapter adapter;
-    WGPUDevice device;
-    WGPUQueue queue;
-    WGPUSurface surface;
+	WGPUInstance instance;
+	WGPUAdapter adapter;
+	WGPUDevice device;
+	WGPUQueue queue;
+	WGPUSurface surface;
 
-    WGPURenderPassEncoder renderPass;
-    WGPUCommandEncoder encoder;
-    WGPUTextureView targetView;
+	WGPURenderPassEncoder renderPass;
+	WGPUCommandEncoder encoder;
+	WGPUTextureView targetView;
 
-    bool* textureLoaded;
-    int32_t* textureWidths;
-    int32_t* textureHeights;
-    WGPUTextureView* wgpuTextureViews;
-    WGPUTexture* wgpuTextures;
+	bool* textureLoaded;
+	int32_t* textureWidths;
+	int32_t* textureHeights;
+	WGPUTextureView* wgpuTextureViews;
+	WGPUTexture* wgpuTextures;
 
-    WGPUShaderModule batchShader;
-    WGPUTextureView batchTextureView;
-    WGPUBindGroup batchBindGroup;
-    WGPURenderPipeline batchPipeline;
-    WGPUBuffer batchUniforms;
+	WGPUShaderModule batchShader;
+	WGPUTextureView batchTextureView;
+	WGPUBindGroup batchBindGroup;
+	WGPURenderPipeline batchPipeline;
+	WGPUBuffer batchUniforms;
 
-    WGPUSprite batchSprites[MAX_SPRITES];
-    size_t batchSpriteCount;
+	WGPUSprite batchSprites[MAX_SPRITES];
+	size_t batchSpriteCount;
 };
 
 Renderer* WGPURender_create(void);

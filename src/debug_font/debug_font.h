@@ -14,11 +14,11 @@
 #define DEBUGFONT_GLYPH_COUNT 95
 
 typedef struct {
-    uint16_t x, y; // atlas position
-    uint16_t w, h; // glyph size in atlas
-    int16_t  xoffset; // pen-relative draw offset
-    int16_t  yoffset; // from top of line
-    int16_t  xadvance; // pen advance after drawing
+	uint16_t x, y;	   // atlas position
+	uint16_t w, h;	   // glyph size in atlas
+	int16_t xoffset;   // pen-relative draw offset
+	int16_t yoffset;   // from top of line
+	int16_t xadvance;  // pen advance after drawing
 } DebugFontGlyphEntry;
 
 extern const uint8_t debugFontPixels[DEBUGFONT_ATLAS_W * DEBUGFONT_ATLAS_H];

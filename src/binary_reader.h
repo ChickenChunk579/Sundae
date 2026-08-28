@@ -1,22 +1,23 @@
 #ifndef _BS_BINARY_READER_H_
 #define _BS_BINARY_READER_H_
 
-#include "common.h"
-#include <stdint.h>
-#include <stddef.h>
-#include "stdio_compat.h"
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "common.h"
+#include "stdio_compat.h"
 
 typedef struct {
-    FILE* file;
-    size_t fileSize;
+	FILE* file;
+	size_t fileSize;
 
-    // When non-null, reads come from this memory buffer instead of the FILE*
-    // bufferBase is the absolute file offset that buffer[0] corresponds to
-    uint8_t* buffer;
-    size_t bufferBase;
-    size_t bufferSize;
-    size_t bufferPos; // current read position relative to bufferBase
+	// When non-null, reads come from this memory buffer instead of the FILE*
+	// bufferBase is the absolute file offset that buffer[0] corresponds to
+	uint8_t* buffer;
+	size_t bufferBase;
+	size_t bufferSize;
+	size_t bufferPos;  // current read position relative to bufferBase
 } BinaryReader;
 
 BinaryReader BinaryReader_create(FILE* file, size_t fileSize);

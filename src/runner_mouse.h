@@ -1,8 +1,9 @@
 #ifndef _BS_RUNNER_MOUSE_H_
 #define _BS_RUNNER_MOUSE_H_
 
-#include "common.h"
 #include <stdint.h>
+
+#include "common.h"
 
 // Mouse buttons
 // TODO verify side buttons are correct
@@ -35,16 +36,16 @@
 #define GML_CR_DEFAULT 0
 
 typedef struct RunnerMouseState {
-    // Cursor cached in app-surface (FBO) pixel space
-    double screenX, screenY;
-    double normalizedX, normalizedY;
-    bool buttonDown[GML_MOUSE_BUTTON_COUNT];
-    bool buttonPressed[GML_MOUSE_BUTTON_COUNT];
-    bool buttonReleased[GML_MOUSE_BUTTON_COUNT];
-    bool wheelUp;
-    bool wheelDown;
-    int32_t currentButton;
-    int32_t lastButton;
+	// Cursor cached in app-surface (FBO) pixel space
+	double screenX, screenY;
+	double normalizedX, normalizedY;
+	bool buttonDown[GML_MOUSE_BUTTON_COUNT];
+	bool buttonPressed[GML_MOUSE_BUTTON_COUNT];
+	bool buttonReleased[GML_MOUSE_BUTTON_COUNT];
+	bool wheelUp;
+	bool wheelDown;
+	int32_t currentButton;
+	int32_t lastButton;
 } RunnerMouseState;
 
 RunnerMouseState* RunnerMouse_create(void);

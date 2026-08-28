@@ -4,7 +4,7 @@
 #include "platformdefs.h"
 
 char** extractRunnerArguments(char* rawArguments);
-int loop(CommandLineArgs args, const char *argv0);
+int loop(CommandLineArgs args, const char* argv0);
 void freeCommandLineArgs(CommandLineArgs* args);
 
 #endif

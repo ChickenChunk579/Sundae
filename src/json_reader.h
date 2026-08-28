@@ -1,30 +1,40 @@
 #ifndef _BS_JSON_READER_H_
 #define _BS_JSON_READER_H_
 
-#include "common.h"
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
+#include "common.h"
 
 // ===[ JsonValue Types ]===
 
 typedef enum {
-    JSON_NULL,
-    JSON_BOOL,
-    JSON_NUMBER,
-    JSON_STRING,
-    JSON_ARRAY,
-    JSON_OBJECT,
+	JSON_NULL,
+	JSON_BOOL,
+	JSON_NUMBER,
+	JSON_STRING,
+	JSON_ARRAY,
+	JSON_OBJECT,
 } JsonValueType;
 
 typedef struct JsonValue {
-    JsonValueType type;
-    union {
-        bool boolValue;
-        double numberValue;
-        char* stringValue;
-        struct { struct JsonValue* items; int count; int capacity; } array;
-        struct { char** keys; struct JsonValue* values; int count; int capacity; } object;
-    };
+	JsonValueType type;
+	union {
+		bool boolValue;
+		double numberValue;
+		char* stringValue;
+		struct {
+			struct JsonValue* items;
+			int count;
+			int capacity;
+		} array;
+		struct {
+			char** keys;
+			struct JsonValue* values;
+			int count;
+			int capacity;
+		} object;
+	};
 } JsonValue;
 
 // ===[ Lifecycle ]===
@@ -55,9 +65,11 @@ JsonValue* JsonReader_getArrayElement(const JsonValue* value, int index);
 
 // ===[ Array Bulk Read ]===
 
-// Reads a JSON number array into a float C array. Asserts the array has exactly expectedLen elements.
+// Reads a JSON number array into a float C array. Asserts the array has exactly expectedLen
+// elements.
 void JsonReader_readFloatArray(const JsonValue* value, float* out, int expectedLen);
-// Reads a JSON number array into an int32 C array. Asserts the array has exactly expectedLen elements.
+// Reads a JSON number array into an int32 C array. Asserts the array has exactly expectedLen
+// elements.
 void JsonReader_readInt32Array(const JsonValue* value, int32_t* out, int expectedLen);
 
 // ===[ Object Access ]===

@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 typedef struct {
-    uint32_t state[16];
-    uint32_t index;
+	uint32_t state[16];
+	uint32_t index;
 } Random;
 
 void Random_setSeed(Random* m, uint32_t seed);

@@ -1,20 +1,21 @@
 #ifndef _BS_RUNNER_KEYBOARD_H_
 #define _BS_RUNNER_KEYBOARD_H_
 
-#include "common.h"
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+
+#include "common.h"
 
 // GML uses key codes 0-255 (vk_nokey=0, vk_anykey=1, ASCII codes, etc.)
 #define GML_KEY_COUNT 256
 
 // GML Virtual Key Constants (match Windows VK codes)
-#define VK_NOKEY     0
-#define VK_ANYKEY    1
+#define VK_NOKEY 0
+#define VK_ANYKEY 1
 #define VK_BACKSPACE 8
-#define VK_ENTER    13
-#define VK_ALT      18
-#define VK_PAGEUP   33
+#define VK_ENTER 13
+#define VK_ALT 18
+#define VK_PAGEUP 33
 #define VK_PAGEDOWN 34
 
 // if windows.h was included, use *its* definitions for the most part.
@@ -23,44 +24,45 @@
 #endif
 #ifndef VK_TAB
 
-#define VK_TAB       9
-#define VK_SHIFT    16
-#define VK_CONTROL  17
-#define VK_ESCAPE   27
-#define VK_SPACE    32
-#define VK_END      35
-#define VK_HOME     36
-#define VK_LEFT     37
-#define VK_UP       38
-#define VK_RIGHT    39
-#define VK_DOWN     40
-#define VK_INSERT   45
-#define VK_DELETE   46
+#define VK_TAB 9
+#define VK_SHIFT 16
+#define VK_CONTROL 17
+#define VK_ESCAPE 27
+#define VK_SPACE 32
+#define VK_END 35
+#define VK_HOME 36
+#define VK_LEFT 37
+#define VK_UP 38
+#define VK_RIGHT 39
+#define VK_DOWN 40
+#define VK_INSERT 45
+#define VK_DELETE 46
 // 48-57 = '0'-'9', 65-90 = 'A'-'Z' (ASCII)
-#define VK_F1      112
-#define VK_F2      113
-#define VK_F3      114
-#define VK_F4      115
-#define VK_F5      116
-#define VK_F6      117
-#define VK_F7      118
-#define VK_F8      119
-#define VK_F9      120
-#define VK_F10     121
-#define VK_F11     122
-#define VK_F12     123
+#define VK_F1 112
+#define VK_F2 113
+#define VK_F3 114
+#define VK_F4 115
+#define VK_F5 116
+#define VK_F6 117
+#define VK_F7 118
+#define VK_F8 119
+#define VK_F9 120
+#define VK_F10 121
+#define VK_F11 122
+#define VK_F12 123
 
 #endif
 
 typedef struct RunnerKeyboardState {
-    bool keyDown[GML_KEY_COUNT];     // Currently held
-    bool keyPressed[GML_KEY_COUNT];  // Just pressed this frame
-    bool keyReleased[GML_KEY_COUNT]; // Just released this frame
-    int32_t keyMap[GML_KEY_COUNT];   // keyboard_set_map: incoming key -> reported key (identity by default)
-    int32_t lastKey;                 // Last key pressed (for keyboard_key variable)
-    char lastChar[2];                // Last character pressed (for keyboard_char variable)
-    char string[1024];               // Accumulated string from keyboard_string variable
-    int32_t stringLen;
+	bool keyDown[GML_KEY_COUNT];	  // Currently held
+	bool keyPressed[GML_KEY_COUNT];	  // Just pressed this frame
+	bool keyReleased[GML_KEY_COUNT];  // Just released this frame
+	int32_t keyMap[GML_KEY_COUNT];	  // keyboard_set_map: incoming key -> reported key (identity by
+									  // default)
+	int32_t lastKey;				  // Last key pressed (for keyboard_key variable)
+	char lastChar[2];				  // Last character pressed (for keyboard_char variable)
+	char string[1024];				  // Accumulated string from keyboard_string variable
+	int32_t stringLen;
 } RunnerKeyboardState;
 
 // Lifecycle

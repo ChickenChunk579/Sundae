@@ -1,9 +1,8 @@
 #ifndef _BS_MA_AUDIO_SYSTEM_H_
 #define _BS_MA_AUDIO_SYSTEM_H_
 
-#include "common.h"
 #include "audio_system.h"
-
+#include "common.h"
 #include "miniaudio.h"
 
 #define MAX_SOUND_INSTANCES 128
@@ -14,37 +13,37 @@
 #define MAX_LISTENERS 4
 
 typedef struct {
-    bool active;
-    int32_t soundIndex; // SOND resource that spawned this
-    int32_t instanceId; // unique ID returned to GML
-    ma_sound maSound; // miniaudio sound object
-    ma_decoder decoder; // decoder for memory-based audio
-    bool ownsDecoder; // true if decoder needs uninit
-    float targetGain;
-    float currentGain;
-    float fadeTimeRemaining;
-    float fadeTotalTime;
-    float startGain;
-    int32_t priority;
+	bool active;
+	int32_t soundIndex;	 // SOND resource that spawned this
+	int32_t instanceId;	 // unique ID returned to GML
+	ma_sound maSound;	 // miniaudio sound object
+	ma_decoder decoder;	 // decoder for memory-based audio
+	bool ownsDecoder;	 // true if decoder needs uninit
+	float targetGain;
+	float currentGain;
+	float fadeTimeRemaining;
+	float fadeTotalTime;
+	float startGain;
+	int32_t priority;
 } SoundInstance;
 
 typedef struct {
-    bool active;
-    char* filePath; // resolved file path (owned, freed on destroy)
-    float initialGain;
-    float initialPitch;
+	bool active;
+	char* filePath;	 // resolved file path (owned, freed on destroy)
+	float initialGain;
+	float initialPitch;
 } AudioStreamEntry;
 
 typedef struct {
-    AudioSystem base;
-    ma_engine engine;
-    ma_device device;
-    SoundInstance instances[MAX_SOUND_INSTANCES];
-    int32_t nextInstanceCounter;
-    FileSystem* fileSystem;
-    AudioStreamEntry streams[MAX_AUDIO_STREAMS];
-    ma_sound_group listenerGroups[MAX_LISTENERS];
-    float listenerGains[MAX_LISTENERS];
+	AudioSystem base;
+	ma_engine engine;
+	ma_device device;
+	SoundInstance instances[MAX_SOUND_INSTANCES];
+	int32_t nextInstanceCounter;
+	FileSystem* fileSystem;
+	AudioStreamEntry streams[MAX_AUDIO_STREAMS];
+	ma_sound_group listenerGroups[MAX_LISTENERS];
+	float listenerGains[MAX_LISTENERS];
 } MaAudioSystem;
 
 MaAudioSystem* MaAudioSystem_create(DataWin* dataWin);

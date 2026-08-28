@@ -1,15 +1,15 @@
 #include "log.h"
 
-#include <stdio.h>
-#include <stdbool.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "utils.h"
 
 // In the platform main.c
-void platformLog(const logType type, const char *format, va_list va);
+void platformLog(const logType type, const char* format, va_list va);
 
 // Example impl:
 // void platformLog(const logType type, const char *format, va_list va) {
@@ -41,9 +41,7 @@ void logInfo(const char* fmt, ...) {
 	va_end(va);
 }
 
-void vLogInfo(const char* fmt, va_list va) {
-	platformLog(LOG_TYPE_NORMAL, fmt, va);
-}
+void vLogInfo(const char* fmt, va_list va) { platformLog(LOG_TYPE_NORMAL, fmt, va); }
 
 void logWarn(const char* fmt, ...) {
 	va_list va;
@@ -53,10 +51,7 @@ void logWarn(const char* fmt, ...) {
 	va_end(va);
 }
 
-void vLogWarn(const char* fmt, va_list va) {
-	platformLog(LOG_TYPE_WARNING, fmt, va);
-}
-
+void vLogWarn(const char* fmt, va_list va) { platformLog(LOG_TYPE_WARNING, fmt, va); }
 
 void logError(const char* fmt, ...) {
 	va_list va;
@@ -66,9 +61,7 @@ void logError(const char* fmt, ...) {
 	va_end(va);
 }
 
-void vLogError(const char* fmt, va_list va) {
-	platformLog(LOG_TYPE_ERROR, fmt, va);
-}
+void vLogError(const char* fmt, va_list va) { platformLog(LOG_TYPE_ERROR, fmt, va); }
 
 void logDebug(const char* fmt, ...) {
 	va_list va;
@@ -78,6 +71,4 @@ void logDebug(const char* fmt, ...) {
 	va_end(va);
 }
 
-void vLogDebug(const char* fmt, va_list va) {
-	platformLog(LOG_TYPE_DEBUG, fmt, va);
-}
+void vLogDebug(const char* fmt, va_list va) { platformLog(LOG_TYPE_DEBUG, fmt, va); }

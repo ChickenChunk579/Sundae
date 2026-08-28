@@ -1,79 +1,64 @@
-#include "common.h"
-#include "stdio_compat.h"
 #include <stdlib.h>
-#include "string_compat.h"
+
+#include "common.h"
 #include "data_win.h"
+#include "stdio_compat.h"
+#include "string_compat.h"
 
-void platformSetFullscreen(bool newState) {
-    (void)newState;
-}
+void platformSetFullscreen(bool newState) { (void)newState; }
 
-bool platformGetFullscreen() {
-    return true;
-}
+bool platformGetFullscreen() { return true; }
 
-void platformLog(const logType type, const char *format, va_list va) {
-    FILE *out = stderr;
-    switch (type) {
-        case LOG_TYPE_NORMAL:
-            out = stdout;
-            break;
-        case LOG_TYPE_WARNING:
-            fputs("Warning: ", out);
-            break;
-        case LOG_TYPE_ERROR:
-            fputs("Error: ", out);
-            break;
+void platformLog(const logType type, const char* format, va_list va) {
+	FILE* out = stderr;
+	switch (type) {
+		case LOG_TYPE_NORMAL:
+			out = stdout;
+			break;
+		case LOG_TYPE_WARNING:
+			fputs("Warning: ", out);
+			break;
+		case LOG_TYPE_ERROR:
+			fputs("Error: ", out);
+			break;
 		case LOG_TYPE_DEBUG:
-            fputs("Debug: ", out);
-            break;
-    }
-    vfprintf(out, format, va);
+			fputs("Debug: ", out);
+			break;
+	}
+	vfprintf(out, format, va);
 }
 
 DataWin* parseDataWin(const char* path) {
-    DataWinParserOptions opts = {0};
-    opts.parseGen8 = true;
-    opts.parseStrg = true; // GEN8 stores string offsets that point into STRG
-    return DataWin_parse(path, opts);
+	DataWinParserOptions opts = {0};
+	opts.parseGen8 = true;
+	opts.parseStrg = true;	// GEN8 stores string offsets that point into STRG
+	return DataWin_parse(path, opts);
 }
 
 void freeDataWin(DataWin* dw) {
-    if (dw != nullptr) DataWin_free(dw);
+	if (dw != nullptr) DataWin_free(dw);
 }
 
-const char* getGameName(DataWin* dw) {
-    return (dw != nullptr) ? dw->gen8.name : nullptr;
-}
+const char* getGameName(DataWin* dw) { return (dw != nullptr) ? dw->gen8.name : nullptr; }
 
 const char* getGameDisplayName(DataWin* dw) {
-    return (dw != nullptr) ? dw->gen8.displayName : nullptr;
+	return (dw != nullptr) ? dw->gen8.displayName : nullptr;
 }
 
-uint32_t getMajorVersion(DataWin* dw) {
-    return (dw != nullptr) ? dw->gen8.major : 0;
-}
+uint32_t getMajorVersion(DataWin* dw) { return (dw != nullptr) ? dw->gen8.major : 0; }
 
-uint32_t getMinorVersion(DataWin* dw) {
-    return (dw != nullptr) ? dw->gen8.minor : 0;
-}
+uint32_t getMinorVersion(DataWin* dw) { return (dw != nullptr) ? dw->gen8.minor : 0; }
 
-uint32_t getRelease(DataWin* dw) {
-    return (dw != nullptr) ? dw->gen8.release : 0;
-}
+uint32_t getRelease(DataWin* dw) { return (dw != nullptr) ? dw->gen8.release : 0; }
 
-uint32_t getBuild(DataWin* dw) {
-    return (dw != nullptr) ? dw->gen8.build : 0;
-}
+uint32_t getBuild(DataWin* dw) { return (dw != nullptr) ? dw->gen8.build : 0; }
 
 uint32_t getDefaultWindowWidth(DataWin* dw) {
-    return (dw != nullptr) ? dw->gen8.defaultWindowWidth : 0;
+	return (dw != nullptr) ? dw->gen8.defaultWindowWidth : 0;
 }
 
 uint32_t getDefaultWindowHeight(DataWin* dw) {
-    return (dw != nullptr) ? dw->gen8.defaultWindowHeight : 0;
+	return (dw != nullptr) ? dw->gen8.defaultWindowHeight : 0;
 }
 
-int main(void) {
-    return 0;
-}
+int main(void) { return 0; }

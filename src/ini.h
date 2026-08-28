@@ -1,25 +1,26 @@
 #ifndef _BS_INI_H_
 #define _BS_INI_H_
 
-#include "common.h"
 #include <stddef.h>
+
+#include "common.h"
 
 #define INI_SERIALIZE_DEFAULT_INITIAL_CAPACITY 256
 
 // ===[ IniFile Types ]===
 
 typedef struct {
-    char* name;
-    char** keys;
-    char** values;
-    int count;
-    int capacity;
+	char* name;
+	char** keys;
+	char** values;
+	int count;
+	int capacity;
 } IniSection;
 
 typedef struct {
-    IniSection* sections;
-    int count;
-    int capacity;
+	IniSection* sections;
+	int count;
+	int capacity;
 } IniFile;
 
 // ===[ Lifecycle ]===

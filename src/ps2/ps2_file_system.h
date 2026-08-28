@@ -1,9 +1,9 @@
 #ifndef _BS_PS2_FILE_SYSTEM_H_
 #define _BS_PS2_FILE_SYSTEM_H_
 
-#include "common.h"
 #include "../file_system.h"
 #include "../json_reader.h"
+#include "common.h"
 
 // Creates a PS2 file system that maps game-relative file names to PS2 device paths
 // using the "fileSystem" object from a parsed CONFIG.JSN root

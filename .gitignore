@@ -8,3 +8,4 @@ compat/config.mk
 *.log
 games/
 .vscode/
+.src-format.cache

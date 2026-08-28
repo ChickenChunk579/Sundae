@@ -1,10 +1,11 @@
 #ifndef _BS_REAL_TYPE_H_
 #define _BS_REAL_TYPE_H_
 
-#include "common.h"
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+#include "common.h"
 
 #ifndef INFINITY
 #define INFINITY ((float)1e39)
@@ -72,16 +73,18 @@ typedef double GMLReal;
 #endif
 
 // Round-half-to-even (banker's rounding).
-// While the original runner uses "llrint(double)", we use our own banker's rounding implementation to avoid quirks in specific platforms (like the PlayStation 2) having different llrint rounding implementations.
+// While the original runner uses "llrint(double)", we use our own banker's rounding implementation
+// to avoid quirks in specific platforms (like the PlayStation 2) having different llrint rounding
+// implementations.
 static inline GMLReal GMLReal_bankersRound(GMLReal v) {
-    if (isnan(v) || isinf(v)) return v;
-    GMLReal f = GMLReal_floor(v);
-    GMLReal frac = v - f;
-    if (0.5 > frac) return f;
-    if (frac > 0.5) return f + 1.0;
-    // Exactly halfway: round to the even neighbor.
-    int64_t fi = (int64_t) f;
-    return (fi & 1) == 0 ? f : f + 1.0;
+	if (isnan(v) || isinf(v)) return v;
+	GMLReal f = GMLReal_floor(v);
+	GMLReal frac = v - f;
+	if (0.5 > frac) return f;
+	if (frac > 0.5) return f + 1.0;
+	// Exactly halfway: round to the even neighbor.
+	int64_t fi = (int64_t)f;
+	return (fi & 1) == 0 ? f : f + 1.0;
 }
 
 #endif /* _BS_REAL_TYPE_H_ */

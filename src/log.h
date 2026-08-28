@@ -1,15 +1,15 @@
 #ifndef _BS_LOG_H
 #define _BS_LOG_H
 
-#include <stdio.h>
-#include <stdbool.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 typedef enum {
-	LOG_TYPE_NORMAL=0,
-	LOG_TYPE_WARNING=1,
-	LOG_TYPE_ERROR=2,
-	LOG_TYPE_DEBUG=3
+	LOG_TYPE_NORMAL = 0,
+	LOG_TYPE_WARNING = 1,
+	LOG_TYPE_ERROR = 2,
+	LOG_TYPE_DEBUG = 3
 } logType;
 
 #define ANSI_COLOUR_CODE_RESET "\033[0m"
