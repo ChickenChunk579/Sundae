@@ -5,6 +5,8 @@
 
 #include <webgpu.h>
 
+#define MAX_TEXTURES 64
+
 typedef struct {
     Renderer base;
 
@@ -17,6 +19,12 @@ typedef struct {
     WGPURenderPassEncoder renderPass;
     WGPUCommandEncoder encoder;
     WGPUTextureView targetView;
+
+    bool* textureLoaded;
+    int32_t* textureWidths;
+    int32_t* textureHeights;
+    WGPUTextureView* wgpuTextureViews;
+    WGPUTexture* wgpuTextures;
 } WGPURender;
 
 Renderer* WGPURender_create(void);

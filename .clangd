@@ -1,2 +1,10 @@
 Diagnostics:
   UnusedIncludes: None
+
+CompileFlags:
+  Add: [
+    "-Wno-unused-variable",
+    "-Wno-unused-parameter",
+    "-Wno-unused-but-set-variable",
+    "-Wno-unused-but-set-parameter"
+  ]

@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 if(PLATFORM STREQUAL "ps3")
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/ppu.cmake)
@@ -32,6 +31,16 @@ set(BACKEND "sdl2")
 endif()
 
 project(sundae C)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
+add_compile_options(
+    -Wno-unused-variable
+    -Wno-unused-parameter
+    -Wno-unused-but-set-variable
+    -Wno-unused-but-set-parameter
+)
 
 if (PLATFORM STREQUAL "vita")
 include("${VITASDK}/share/vita.cmake" REQUIRED)

@@ -2,6 +2,7 @@
 #include "data_win.h"
 #include "platformdefs.h"
 #include "renderer.h"
+#include "image_decoder.h"
 #include <webgpu.h>
 #include <unistd.h>
 
@@ -39,9 +40,92 @@ void onDeviceRequestEnded(
     *(WGPUDevice*)(userdata2) = device;
 }
 
+bool WGPURender_ensureTextureLoaded(Renderer* renderer, uint32_t pageId) {
+    WGPURender* self = (WGPURender*)renderer;
+    if (self->textureLoaded[pageId]) return (self->textureWidths[pageId] != 0);
+
+    self->textureLoaded[pageId] = true;
+
+    DataWin* dw = self->base.dataWin;
+    Texture* txtr = &dw->txtr.textures[pageId];
+
+    if (!txtr) {
+        logWarn("wgpu: attempted to load non extistant texture page %d\n", txtr);
+        return false;
+    }
+
+    DataWin_loadTxtrIfNeeded(dw, pageId);
+
+    int w, h;
+    bool gm2022_5 = DataWin_isVersionAtLeast(dw, 2022, 5, 0, 0);
+    uint8_t* pixels = ImageDecoder_decodeToRgba(txtr->blobData, (size_t) txtr->blobSize, gm2022_5, &w, &h);
+    if (pixels == nullptr) {
+        logWarn("wgpu: Failed to decode TXTR page %u\n", pageId);
+        return false;
+    }
+    if (!txtr->mapped) {
+        free(txtr->blobData);
+        txtr->blobData = nullptr;
+        logWarn("wgpu: texture not mapped\n");
+        return false;
+    }
+
+    logDebug("wgpu: decoded texture successfully\n");
+
+    self->textureWidths[pageId] = w;
+    self->textureHeights[pageId] = h;
+
+    WGPUTextureDescriptor textureDesc = {};
+    textureDesc.nextInChain = nullptr;
+    textureDesc.dimension = WGPUTextureDimension_2D;
+    textureDesc.format = WGPUTextureFormat_RGBA8Unorm;
+    textureDesc.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
+    textureDesc.viewFormats = NULL;
+    textureDesc.viewFormatCount = 0;
+    textureDesc.sampleCount = 1;
+    textureDesc.mipLevelCount = 1;
+    
+    WGPUExtent3D textureSize = {};
+    textureSize.width = w;
+    textureSize.height = h;
+    textureSize.depthOrArrayLayers = 1;
+
+    textureDesc.size = textureSize;
+
+    WGPUTexture tex = wgpuDeviceCreateTexture(self->device, &textureDesc);
+
+    logDebug("wgpu: created texture\n");
+
+    WGPUTexelCopyTextureInfo copyInfo = {};
+    copyInfo.texture = tex;
+    copyInfo.aspect = WGPUTextureAspect_All;
+    copyInfo.mipLevel = 0;
+
+    WGPUTexelCopyBufferLayout copyBufferLayout = {};
+    copyBufferLayout.bytesPerRow = w * 4;
+    copyBufferLayout.offset = 0;
+    copyBufferLayout.rowsPerImage = h;
+
+    wgpuQueueWriteTexture(
+        self->queue,
+        &copyInfo,
+        pixels,
+        (size_t)((w * h) * 4),
+        &copyBufferLayout,
+        &textureSize
+    );
+
+    logDebug("wgpu: wrote texture\n");
+
+    logDebug("wgpu: loaded texture page %d into texture %x\n", tex);
+
+    free(pixels);
+
+    return true;
+}
+
 void WGPURender_init(Renderer* renderer, DataWin* dataWin) {
     WGPURender* self = (WGPURender*)renderer;
-    (void)self;
 
     renderer->dataWin = dataWin;
 
@@ -147,6 +231,9 @@ void WGPURender_init(Renderer* renderer, DataWin* dataWin) {
     config.alphaMode = WGPUCompositeAlphaMode_Auto;
 
     wgpuSurfaceConfigure(self->surface, &config);
+
+
+    bool res = WGPURender_ensureTextureLoaded(renderer, 0);
 }
 
 void WGPURender_destroy(Renderer* renderer) {
@@ -207,8 +294,6 @@ void WGPURender_beginFrame(Renderer* renderer, int32_t gameW, int32_t gameH, int
 	renderPassDesc.timestampWrites = nullptr;
 
     self->renderPass = wgpuCommandEncoderBeginRenderPass(self->encoder, &renderPassDesc);
-
-
 }
 
 WGPUBool wgpuDevicePoll(WGPUDevice device, WGPUBool wait, WGPU_NULLABLE void const * submissionIndex);
@@ -235,11 +320,11 @@ void WGPURender_endFrameInit(Renderer* renderer) {
 }
 
 void WGPURender_endFrameEnd(Renderer* renderer) {
-    WGPURender* self = (WGPURender*)renderer;    
+    WGPURender* self = (WGPURender*)renderer;
 }
 
 void WGPURender_beginView(Renderer* renderer, int32_t viewX, int32_t viewY, int32_t viewW, int32_t viewH, int32_t portX, int32_t portY, int32_t portW, int32_t portH, float viewAngle) {
-    WGPURender* self = (WGPURender*)renderer;    
+    WGPURender* self = (WGPURender*)renderer;
 }
 
 void WGPURenderer_endView(Renderer* renderer) {
@@ -252,10 +337,17 @@ void WGPURender_beginGUI(Renderer* renderer, int32_t guiW, int32_t guiH, int32_t
 
 void WGPURender_endGUI(Renderer* renderer) {
     WGPURender* self = (WGPURender*)renderer;
+    (void)self;
 }
 
 void WGPURender_setGUIProjection(Renderer* renderer, int32_t guiW, int32_t guiH, int32_t portW, int32_t portH, bool renderingToUserSurface) {
+    (void)guiW;
+    (void)guiH;
+    (void)portW;
+    (void)portH;
+    (void)renderingToUserSurface;
     WGPURender* self = (WGPURender*)renderer;   
+    (void)self;
 }
 
 void WGPURender_applyProjection(Renderer* renderer, const Matrix4f* viewMatrix, const Matrix4f* projectionMatrix) {
@@ -961,6 +1053,12 @@ Renderer* WGPURender_create(void) {
     wgpu->base.circlePrecision = 24;
     wgpu->base.currentShader = -1;
     wgpu->base.cameraCurrent = 0;
+
+    wgpu->wgpuTextures = (WGPUTexture*)safeCalloc(MAX_TEXTURES, sizeof(WGPUTexture));
+    wgpu->wgpuTextureViews = (WGPUTextureView*)safeCalloc(MAX_TEXTURES, sizeof(WGPUTextureView));
+    wgpu->textureLoaded = (bool*)safeCalloc(MAX_TEXTURES, sizeof(bool));
+    wgpu->textureWidths = (int32_t*)safeCalloc(MAX_TEXTURES, sizeof(int32_t));
+    wgpu->textureHeights = (int32_t*)safeCalloc(MAX_TEXTURES, sizeof(int32_t));
 
     return (Renderer*)wgpu;
 }
