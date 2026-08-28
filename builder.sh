@@ -29,7 +29,7 @@ else
     exit 1
 fi
 
-CMAKE_FLAGS="-B build/$1 -S . -GNinja -DCMAKE_EXPORT_COMPILE_COMMANDS=1 "
+CMAKE_FLAGS="-B build/$1 -S . -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=1 "
 if [[ $1 == "mac-appkit" ]]; then
     CMAKE_FLAGS+="-DPLATFORM=cli -DBACKEND=appkit -DVIDEO_BACKEND=ffmpeg" 
 elif [[ $1 == "mac-glfw3" ]]; then
@@ -57,12 +57,16 @@ $CMAKE $CMAKE_FLAGS
 if [[ $2 == "clean" ]]; then
     $CMAKE --build "build/$1" --target clean
     echo "done cleaning"
-elif [[ $2 == "build" || $2 == "run" || $2 == "rungdb" ]]; then
+elif [[ $2 == "build" || $2 == "run" || $2 == "rundbg" ]]; then
     $CMAKE --build "build/$1"
     if [[ $2 == "run" ]]; then
         "./build/$1/sundae" "${@:3}"
-    elif [[ $2 == "rungdb" ]]; then
-        lldb "./build/$1/sundae"
+    elif [[ $2 == "rundbg" ]]; then
+        if [[ $1 == linux-* ]]; then
+            gdb --args "./build/$1/sundae" "${@:3}"
+        else
+            lldb "./build/$1/sundae" -- "${@:3}"
+        fi
     else
         echo "done building"
     fi
