@@ -34,6 +34,8 @@ struct WGPURender {
 	WGPURenderPipeline batchPipeline;
 	WGPUBuffer batchStorage;
 
+	WGPUColor clearColor;
+
 	WGPUSprite batchSprites[MAX_SPRITES];
 	size_t batchSpriteCount;
 };

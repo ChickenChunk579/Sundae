@@ -10,6 +10,7 @@
 #include "platformdefs.h"
 #include "renderer.h"
 #include "wgpu_batch.h"
+#include "wgpu_helpers.h"
 
 static RendererVtable wgpuVtable;
 
@@ -47,6 +48,12 @@ void onDeviceRequestEnded(WGPURequestDeviceStatus status, WGPUDevice device, WGP
 
 bool WGPURender_ensureTextureLoaded(Renderer* renderer, uint32_t pageId) {
 	WGPURender* self = (WGPURender*)renderer;
+
+	if (pageId >= MAX_TEXTURES) {
+		logWarn("wgpu: texture page %u out of range (max %u)\n", pageId, (uint32_t)MAX_TEXTURES);
+		return false;
+	}
+
 	if (self->textureLoaded[pageId]) return (self->textureWidths[pageId] != 0);
 
 	self->textureLoaded[pageId] = true;
@@ -73,7 +80,6 @@ bool WGPURender_ensureTextureLoaded(Renderer* renderer, uint32_t pageId) {
 		free(txtr->blobData);
 		txtr->blobData = nullptr;
 		logWarn("wgpu: texture not mapped\n");
-		return false;
 	}
 
 	logDebug("wgpu: decoded texture successfully\n");
@@ -99,6 +105,13 @@ bool WGPURender_ensureTextureLoaded(Renderer* renderer, uint32_t pageId) {
 	textureDesc.size = textureSize;
 
 	WGPUTexture tex = wgpuDeviceCreateTexture(self->device, &textureDesc);
+	if (!tex) {
+		logWarn("wgpu: failed to create texture for page %u\n", pageId);
+		free(pixels);
+		self->textureWidths[pageId] = 0;
+		self->textureHeights[pageId] = 0;
+		return false;
+	}
 
 	logDebug("wgpu: created texture\n");
 
@@ -117,10 +130,56 @@ bool WGPURender_ensureTextureLoaded(Renderer* renderer, uint32_t pageId) {
 
 	logDebug("wgpu: wrote texture\n");
 
-	logDebug("wgpu: loaded texture page %d into texture %x\n", tex);
-
 	free(pixels);
 
+	// Create a view now, since this is what actually gets bound/sampled later.
+	WGPUTextureViewDescriptor viewDesc = {};
+	viewDesc.nextInChain = nullptr;
+	viewDesc.format = WGPUTextureFormat_RGBA8Unorm;
+	viewDesc.dimension = WGPUTextureViewDimension_2D;
+	viewDesc.baseMipLevel = 0;
+	viewDesc.mipLevelCount = 1;
+	viewDesc.baseArrayLayer = 0;
+	viewDesc.arrayLayerCount = 1;
+	viewDesc.aspect = WGPUTextureAspect_All;
+
+	WGPUTextureView view = wgpuTextureCreateView(tex, &viewDesc);
+	if (!view) {
+		logWarn("wgpu: failed to create texture view for page %u\n", pageId);
+		wgpuTextureRelease(tex);
+		self->textureWidths[pageId] = 0;
+		self->textureHeights[pageId] = 0;
+		return false;
+	}
+
+	// If this page was ever loaded before (e.g. a forced reload), release the old GPU objects
+	// before overwriting the slot so we don't leak.
+	if (self->wgpuTextureViews[pageId]) {
+		wgpuTextureViewRelease(self->wgpuTextureViews[pageId]);
+	}
+	if (self->wgpuTextures[pageId]) {
+		wgpuTextureRelease(self->wgpuTextures[pageId]);
+	}
+
+	self->wgpuTextures[pageId] = tex;
+	self->wgpuTextureViews[pageId] = view;
+
+	logDebug("wgpu: loaded texture page %u into texture %p (view %p)\n", pageId, (void*)tex,
+			 (void*)view);
+
+	return true;
+}
+
+bool WGPURender_resolveSpriteTexture(WGPURender* self, int32_t tpagIndex, TexturePageItem** outTpag,
+									 int32_t* outPageId) {
+	DataWin* dw = self->base.dataWin;
+	if (tpagIndex < 0 || dw->tpag.count <= (uint32_t)tpagIndex) return false;
+	TexturePageItem* tpag = &dw->tpag.items[tpagIndex];
+	int16_t pageId = tpag->texturePageId;
+	if (pageId < 0 || (uint32_t)pageId >= MAX_TEXTURES) return false;
+	if (!WGPURender_ensureTextureLoaded((Renderer*)self, (uint32_t)pageId)) return false;
+	*outTpag = tpag;
+	*outPageId = pageId;
 	return true;
 }
 
@@ -223,6 +282,17 @@ void WGPURender_init(Renderer* renderer, DataWin* dataWin) {
 void WGPURender_destroy(Renderer* renderer) {
 	WGPURender* self = (WGPURender*)renderer;
 
+	for (uint32_t i = 0; i < MAX_TEXTURES; i++) {
+		if (self->wgpuTextureViews[i]) {
+			wgpuTextureViewRelease(self->wgpuTextureViews[i]);
+			self->wgpuTextureViews[i] = nullptr;
+		}
+		if (self->wgpuTextures[i]) {
+			wgpuTextureRelease(self->wgpuTextures[i]);
+			self->wgpuTextures[i] = nullptr;
+		}
+	}
+
 	wgpuQueueRelease(self->queue);
 	wgpuSurfaceRelease(self->surface);
 	wgpuDeviceRelease(self->device);
@@ -274,7 +344,7 @@ void WGPURender_beginFrame(Renderer* renderer, int32_t gameW, int32_t gameH, int
 	static float t = 0.0f;
 	t += 0.01f;
 
-	renderPassColorAttachment.clearValue = (WGPUColor){(sin(t) + 1.0) * 0.5, 0.0, 0.0, 1.0};
+	renderPassColorAttachment.clearValue = self->clearColor;
 	renderPassColorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 
 	renderPassDesc.colorAttachmentCount = 1;
@@ -298,23 +368,6 @@ void WGPURender_beginFrame(Renderer* renderer, int32_t gameW, int32_t gameH, int
 	}
 
 	WGPURender_batchBegin(self);
-
-	for (int i = 0; i < 100; i++) {
-		float x = (float)(rand() % 640);
-		float y = (float)(rand() % 480);
-
-		float w = 25.0f + (float)(rand() % 76);
-		float h = 25.0f + (float)(rand() % 76);
-
-		float r = (float)rand() / (float)RAND_MAX;
-		float g = (float)rand() / (float)RAND_MAX;
-		float b = (float)rand() / (float)RAND_MAX;
-		float a = 1.0f;
-
-		WGPURender_batchDraw(self, x, y, w, h, r, g, b, a);
-	}
-
-	WGPURender_batchEnd(self);
 }
 
 WGPUBool wgpuDevicePoll(WGPUDevice device, WGPUBool wait,
@@ -322,6 +375,7 @@ WGPUBool wgpuDevicePoll(WGPUDevice device, WGPUBool wait,
 
 void WGPURender_endFrameInit(Renderer* renderer) {
 	WGPURender* self = (WGPURender*)renderer;
+	WGPURender_batchEnd(self);
 
 	wgpuRenderPassEncoderEnd(self->renderPass);
 	wgpuRenderPassEncoderRelease(self->renderPass);
@@ -384,8 +438,9 @@ void WGPURender_drawSprite(Renderer* renderer, int32_t tpagIndex, float x, float
 						   float originY, float xscale, float yscale, float angleDeg,
 						   uint32_t color, float alpha) {
 	WGPURender* self = (WGPURender*)renderer;
-	(void)self;
-	(void)tpagIndex;
+	TexturePageItem* tpag;
+	int32_t pageId;
+	WGPURender_resolveSpriteTexture(self, tpagIndex, &tpag, &pageId);
 	(void)x;
 	(void)y;
 	(void)originX;
@@ -402,6 +457,9 @@ void WGPURender_drawSpritePart(Renderer* renderer, int32_t tpagIndex, int32_t sr
 							   float xscale, float yscale, float angleDeg, float pivotX,
 							   float pivotY, uint32_t color, float alpha) {
 	WGPURender* self = (WGPURender*)renderer;
+	TexturePageItem* tpag;
+	int32_t pageId;
+	WGPURender_resolveSpriteTexture(self, tpagIndex, &tpag, &pageId);
 	(void)self;
 	(void)tpagIndex;
 	(void)srcOffX;
@@ -425,6 +483,9 @@ void WGPURender_drawSpritePartColor(Renderer* renderer, int32_t tpagIndex, int32
 									float pivotY, uint32_t color1, uint32_t color2, uint32_t color3,
 									uint32_t color4, float alpha) {
 	WGPURender* self = (WGPURender*)renderer;
+	TexturePageItem* tpag;
+	int32_t pageId;
+	WGPURender_resolveSpriteTexture(self, tpagIndex, &tpag, &pageId);
 	(void)self;
 	(void)tpagIndex;
 	(void)srcOffX;
@@ -448,6 +509,9 @@ void WGPURender_drawSpritePartColor(Renderer* renderer, int32_t tpagIndex, int32
 void WGPURender_drawSpritePos(Renderer* renderer, int32_t tpagIndex, float x1, float y1, float x2,
 							  float y2, float x3, float y3, float x4, float y4, float alpha) {
 	WGPURender* self = (WGPURender*)renderer;
+	TexturePageItem* tpag;
+	int32_t pageId;
+	WGPURender_resolveSpriteTexture(self, tpagIndex, &tpag, &pageId);
 	(void)self;
 	(void)tpagIndex;
 	(void)x1;
@@ -464,31 +528,47 @@ void WGPURender_drawSpritePos(Renderer* renderer, int32_t tpagIndex, float x1, f
 void WGPURender_drawRectangle(Renderer* renderer, float x1, float y1, float x2, float y2,
 							  uint32_t color, float alpha, bool outline) {
 	WGPURender* self = (WGPURender*)renderer;
-	(void)self;
-	(void)x1;
-	(void)y1;
-	(void)x2;
-	(void)y2;
-	(void)color;
-	(void)alpha;
-	(void)outline;
+	if (outline) {
+		logWarn("wgpu: drawRectangle outline mode not yet supported, drawing filled\n");
+	}
+
+	float r, g, b, a;
+	WGPUColor_fromGM(color, alpha, &r, &g, &b, &a);
+
+	float x = fminf(x1, x2);
+	float y = fminf(y1, y2);
+	float w = fabsf(x2 - x1);
+	float h = fabsf(y2 - y1);
+
+	WGPURender_batchDraw(self, x, y, w, h, r, g, b, a);
 }
 
 void WGPURender_drawRectangleColor(Renderer* renderer, float x1, float y1, float x2, float y2,
 								   uint32_t color1, uint32_t color2, uint32_t color3,
 								   uint32_t color4, float alpha, bool outline) {
 	WGPURender* self = (WGPURender*)renderer;
-	(void)self;
-	(void)x1;
-	(void)y1;
-	(void)x2;
-	(void)y2;
-	(void)color1;
-	(void)color2;
-	(void)color3;
-	(void)color4;
-	(void)alpha;
-	(void)outline;
+	if (outline) {
+		logWarn("wgpu: drawRectangleColor outline mode not yet supported, drawing filled\n");
+	}
+
+	// Batch quads only support one flat color per sprite right now, so
+	// average the four corner colors until per-vertex color is wired up.
+	float r1, g1, b1, a1, r2, g2, b2, a2, r3, g3, b3, a3, r4, g4, b4, a4;
+	WGPUColor_fromGM(color1, alpha, &r1, &g1, &b1, &a1);
+	WGPUColor_fromGM(color2, alpha, &r2, &g2, &b2, &a2);
+	WGPUColor_fromGM(color3, alpha, &r3, &g3, &b3, &a3);
+	WGPUColor_fromGM(color4, alpha, &r4, &g4, &b4, &a4);
+
+	float r = (r1 + r2 + r3 + r4) * 0.25f;
+	float g = (g1 + g2 + g3 + g4) * 0.25f;
+	float b = (b1 + b2 + b3 + b4) * 0.25f;
+
+	float x = fminf(x1, x2);
+	float y = fminf(y1, y2);
+	float w = fabsf(x2 - x1);
+	float h = fabsf(y2 - y1);
+
+	WGPURender_batchDraw(self, x, y, w, h, r, g, b, alpha);
 }
 
 void WGPURender_drawLine(Renderer* renderer, float x1, float y1, float x2, float y2, float width,
@@ -575,9 +655,9 @@ void WGPURender_flush(Renderer* renderer) {
 
 void WGPURender_clearScreen(Renderer* renderer, uint32_t color, float alpha) {
 	WGPURender* self = (WGPURender*)renderer;
-	(void)self;
-	(void)color;
-	(void)alpha;
+	float r, g, b, a;
+	WGPUColor_fromGM(color, alpha, &r, &g, &b, &a);
+	self->clearColor = (WGPUColor){r, g, b, a};
 }
 
 int32_t WGPURender_createSpriteFromSurface(Renderer* renderer, int32_t surfaceID, int32_t x,
@@ -942,9 +1022,10 @@ void WGPURender_shaderSetUniformI(Renderer* renderer, int32_t handle, int32_t co
 
 uint32_t WGPURender_spriteGetTexture(Renderer* renderer, int32_t tpagIndex) {
 	WGPURender* self = (WGPURender*)renderer;
-	(void)self;
-	(void)tpagIndex;
-	return 0;
+	TexturePageItem* tpag;
+	int32_t pageId;
+	if (!WGPURender_resolveSpriteTexture(self, tpagIndex, &tpag, &pageId)) return 0;
+	return (uint32_t)(tpagIndex + 1);  // matches GL's handle scheme: 0 = none, index+1 otherwise
 }
 
 uint32_t WGPURender_surfaceGetTexture(Renderer* renderer, int32_t surfaceID) {

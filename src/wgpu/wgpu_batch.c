@@ -20,6 +20,7 @@ struct Uniforms {
 };
 
 @group(0) @binding(0) var<storage, read> uniforms: Uniforms;
+@group(0) @binding(1) var textures: texture_2d_array<f32>;
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
@@ -97,16 +98,17 @@ void WGPURender_batchBegin(WGPURender* self) {
 
 	self->batchStorage = wgpuDeviceCreateBuffer(self->device, &bufferDesc);
 
-	WGPUBindGroupLayoutEntry layoutEntry = {};
-	layoutEntry.binding = 0;
-	layoutEntry.visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment;
-	layoutEntry.buffer.type = WGPUBufferBindingType_ReadOnlyStorage;
-	layoutEntry.buffer.hasDynamicOffset = false;
-	layoutEntry.buffer.minBindingSize = sizeof(WGPUUniforms);
+	WGPUBindGroupLayoutEntry layoutEntries[2] = {};
+
+	layoutEntries[0].binding = 0;
+	layoutEntries[0].visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment;
+	layoutEntries[0].buffer.type = WGPUBufferBindingType_ReadOnlyStorage;
+	layoutEntries[0].buffer.hasDynamicOffset = false;
+	layoutEntries[0].buffer.minBindingSize = sizeof(WGPUUniforms);
 
 	WGPUBindGroupLayoutDescriptor layoutDesc = {};
 	layoutDesc.entryCount = 1;
-	layoutDesc.entries = &layoutEntry;
+	layoutDesc.entries = layoutEntries;
 
 	WGPUBindGroupLayout bindGroupLayout =
 		wgpuDeviceCreateBindGroupLayout(self->device, &layoutDesc);

@@ -8,3 +8,6 @@ CompileFlags:
     "-Wno-unused-but-set-variable",
     "-Wno-unused-but-set-parameter"
   ]
+  CompilationDatabase: build/linux-sdl3
+
+      
