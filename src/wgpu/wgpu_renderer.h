@@ -32,7 +32,7 @@ struct WGPURender {
 	WGPUTextureView batchTextureView;
 	WGPUBindGroup batchBindGroup;
 	WGPURenderPipeline batchPipeline;
-	WGPUBuffer batchUniforms;
+	WGPUBuffer batchStorage;
 
 	WGPUSprite batchSprites[MAX_SPRITES];
 	size_t batchSpriteCount;

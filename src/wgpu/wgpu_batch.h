@@ -6,7 +6,7 @@
 
 typedef struct WGPURender WGPURender;
 
-#define MAX_SPRITES 128
+#define MAX_SPRITES 8192
 
 typedef struct {
 	float x;
@@ -24,7 +24,7 @@ typedef struct {
 } WGPUSprite;
 
 typedef struct {
-	WGPUSprite sprites[128];
+	WGPUSprite sprites[MAX_SPRITES];
 	uint32_t count;
 	uint32_t width;
 	uint32_t height;

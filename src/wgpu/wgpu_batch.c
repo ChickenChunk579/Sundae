@@ -12,14 +12,14 @@ struct Sprite {
 };
 
 struct Uniforms {
-    sprites: array<Sprite, 128>,
+    sprites: array<Sprite, 8192>,
     count: u32,
     width: u32,
     height: u32,
     pad: u32,
 };
 
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+@group(0) @binding(0) var<storage, read> uniforms: Uniforms;
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
@@ -91,16 +91,16 @@ void WGPURender_batchBegin(WGPURender* self) {
 	self->batchSpriteCount = 0;
 
 	WGPUBufferDescriptor bufferDesc = {};
-	bufferDesc.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
+	bufferDesc.usage = WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst;
 	bufferDesc.size = sizeof(WGPUUniforms);
 	bufferDesc.mappedAtCreation = false;
 
-	self->batchUniforms = wgpuDeviceCreateBuffer(self->device, &bufferDesc);
+	self->batchStorage = wgpuDeviceCreateBuffer(self->device, &bufferDesc);
 
 	WGPUBindGroupLayoutEntry layoutEntry = {};
 	layoutEntry.binding = 0;
 	layoutEntry.visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment;
-	layoutEntry.buffer.type = WGPUBufferBindingType_Uniform;
+	layoutEntry.buffer.type = WGPUBufferBindingType_ReadOnlyStorage;
 	layoutEntry.buffer.hasDynamicOffset = false;
 	layoutEntry.buffer.minBindingSize = sizeof(WGPUUniforms);
 
@@ -166,7 +166,7 @@ void WGPURender_batchBegin(WGPURender* self) {
 
 	WGPUBindGroupEntry bindEntry = {};
 	bindEntry.binding = 0;
-	bindEntry.buffer = self->batchUniforms;
+	bindEntry.buffer = self->batchStorage;
 	bindEntry.offset = 0;
 	bindEntry.size = sizeof(WGPUUniforms);
 
@@ -206,7 +206,7 @@ void WGPURender_batchEnd(WGPURender* self) {
 	uniforms.width = 640;
 	uniforms.height = 480;
 
-	wgpuQueueWriteBuffer(self->queue, self->batchUniforms, 0, &uniforms, sizeof(uniforms));
+	wgpuQueueWriteBuffer(self->queue, self->batchStorage, 0, &uniforms, sizeof(uniforms));
 
 	wgpuRenderPassEncoderSetPipeline(self->renderPass, self->batchPipeline);
 	wgpuRenderPassEncoderSetBindGroup(self->renderPass, 0, self->batchBindGroup, 0, NULL);
